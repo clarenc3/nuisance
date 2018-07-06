@@ -1,9 +1,16 @@
+#!/usr/bin/env python
 from ROOT import *
 import os
 import sys
 
-
 gColorList = [kRed, kGreen, kBlue, kYellow, kOrange, kBlack]
+
+gStyle.SetOptStat(0)
+gStyle.SetPadGridX(1)
+gStyle.SetPadGridY(1)
+
+def RemoveAfter(string, suffix):
+  return string[:string.index(suffix)]
 
 def DrawDataMC(keyname, filelist):
 
@@ -34,11 +41,10 @@ def DrawDataMC(keyname, filelist):
         mckey = keyname.replace("_data","_MC")
         singlemc = mcfile[0].Get(mckey)
         if singlemc: 
-
             singlemc = singlemc.Clone(mcfile[1]+"_MC")
             singlemc.SetLineColor( gColorList[i] )
             singlemc.SetLineWidth(2)
-            singlemc.SetTitle( mcfile[1] + " (" + str(singlemc.GetTitle().strip()) + ") " )
+            singlemc.SetTitle( mcfile[1] + " (#chi^{2}=" + str(singlemc.GetTitle().strip()) + ") " )
             
             singlemclist.append(singlemc.Clone())
             del singlemc
@@ -55,7 +61,6 @@ def DrawDataMC(keyname, filelist):
             singledatalist.append(singledata.Clone())
             del singledata
 
-
     # Assign Ranges
     miny = 99999.9
     maxy = 0.0
@@ -71,8 +76,28 @@ def DrawDataMC(keyname, filelist):
     widthy = maxy - miny
 
     # Assign Ranges to data
-    if "1D" in keyname:    data.GetYaxis().SetRangeUser( miny - 0.1*widthy, maxy + 0.3*widthy)
-    elif "2D" in keyname:  data.GetZaxis().SetRangeUser( miny - 0.1*widthy, maxy + 0.3*widthy)
+    if "1D" in keyname:    data.GetYaxis().SetRangeUser(0, maxy + 0.3*widthy)
+    elif "2D" in keyname:  data.GetZaxis().SetRangeUser(0, maxy + 0.3*widthy)
+
+    # Set fancy title
+    fancyname=data.GetTitle()
+    print fancyname
+    fancyname = fancyname.replace("_", " ")
+    fancyname = fancyname.replace("data", "")
+    fancyname = fancyname.replace("pi0", "#pi^{0}")
+    fancyname = fancyname.replace("pip", "#pi^{+}")
+    fancyname = fancyname.replace("pim", "#pi^{-}")
+    fancyname = RemoveAfter(fancyname, "XSec")
+    fancyname = fancyname.replace("1D","")
+    fancyname = fancyname.replace("2D","")
+    fancyname = fancyname.replace("nu", "#nu")
+    axis=data.GetXaxis().GetTitle()
+    if (len(axis) > 0):
+      axis=axis.split()[0]
+      fancyname = fancyname + str(axis)
+    
+    print fancyname
+    data.SetTitle(fancyname)
 
     # Draw Plots 1D
     if "1D" in keyname:   
@@ -87,24 +112,36 @@ def DrawDataMC(keyname, filelist):
             mc.Draw("SAME LEGO")
 
     # Build Legend
-    leg = gPad.BuildLegend(0.45,0.65,0.8,0.85)
+    # Prettify legend
+    leg = TLegend(0.45, 0.65, 0.9, 0.9)
+    leg.AddEntry(data, "Data", "le")
+    for mc in singlemclist:
+      name=mc.GetTitle().replace("_"," ")
+      leg.AddEntry(mc, name, "l")
+
+    #leg = gPad.BuildLegend(0.45,0.65,0.9,0.9)
     leg.SetFillStyle(0)
     leg.SetFillColorAlpha(0,0.0)
     leg.SetBorderSize(0)
+    leg.Draw("same")
 
     gStyle.SetOptTitle(1)
-    gPad.SetGridx(0)
-    gPad.SetGridy(0)
+    gPad.SetGridx(1)
+    gPad.SetGridy(1)
     gPad.Update()
 
     singlemclist.append(data)
     return singlemclist
 
-
 if __name__=="__main__":
-    c1 = TCanvas("c1","c1",210*4,297*4)
+
+    if (len(sys.argv) < 3):
+      print "Need at least two arguments:",sys.argv[0]," outputname, inputfile1, inputfile2..."
+      sys.exit()
+
+    print sys.argv
+    c1 = TCanvas("c1","c1",1024,1024)
     c1.cd()
-    
 
     # Make filelist
     allfiles = []
@@ -146,26 +183,21 @@ if __name__=="__main__":
     # Setup First Page
     leg = TLegend(0.1,0.1,0.9,0.9)
     for i, readfile in enumerate(allfiles):
-        hist = TH1D(readfile[1],readfile[1],1,0,1)
+        hist = TH1D(readfile[1], readfile[1], 1,0,1)
         hist.SetLineColor(gColorList[i % len(gColorList)])
         hist.SetLineWidth(2)
-
         leg.AddEntry(hist, readfile[1], "l")
 
     leg.Draw()
     gPad.Update()
-    
 
     outputfile = sys.argv[1]
     c1.Print(outputfile + "(")
 
-
     # Loop through unique keys
     for readkey in uniquekeys:
-        
         # Draw
         datamclist = DrawDataMC(readkey, allfiles)
-
         # Save
         c1.Print(outputfile)
 
