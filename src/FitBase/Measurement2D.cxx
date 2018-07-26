@@ -105,6 +105,7 @@ Measurement2D::Measurement2D(void) {
   fIsMask = false;
   fIsChi2SVD = false;
   fIsRawEvents = false;
+
   fIsDifXSec = false;
   fIsEnu1D = false;
 
@@ -256,9 +257,19 @@ void Measurement2D::SetDataErrorsFromTextFile(std::string datfile, TH2D* hist) {
 
 }
 
+// ****************************************
+// Used for MINERvA CC0pi 2D ptpz
 void Measurement2D::SetMapValuesFromText(std::string dataFile) {
+// ****************************************
 
   TH2D* hist = fDataHist;
+  if (hist == NULL) {
+    ERR(FTL) << "Attempted to se map values for TH2D in measurement " << fSettings.Title() << " without having set data histogram!" << std::endl;
+    ERR(FTL) << "Please initalise the data histogram before calling me!" << std::endl;
+    ERR(FTL) << __FILE__ << ":" << __LINE__ << std::endl;
+    throw;
+  }
+
   std::vector<double> edgex;
   std::vector<double> edgey;
 
@@ -271,7 +282,6 @@ void Measurement2D::SetMapValuesFromText(std::string dataFile) {
 
   LOG(SAM) << "Reading map from: " << dataFile << std::endl;
   PlotUtils::Set2DHistFromText(dataFile, fMapHist, 1.0);
-
 }
 
 //********************************************************************
@@ -633,14 +643,11 @@ void Measurement2D::FinaliseMeasurement() {
 
   // Create and fill Weighted Histogram
   if (!fMCWeighted) {
-
     fMCWeighted = (TH2D*)fMCHist->Clone();
     fMCWeighted->SetNameTitle((fName + "_MCWGHTS").c_str(),
                               (fName + "_MCWGHTS" + fPlotTitles).c_str());
     fMCWeighted->GetYaxis()->SetTitle("Weighted Events");
-
   }
-
 
 }
 
@@ -869,9 +876,14 @@ void Measurement2D::ScaleEvents() {
 
     // Any other differential scaling
   } else {
-    fMCHist->Scale(fScaleFactor, "width");
-    fMCFine->Scale(fScaleFactor, "width");
-
+    // Some measurements bin-width normalise the cross-section, others don't
+    if (!fIsNoWidth) {
+      fMCHist->Scale(fScaleFactor, "width");
+      fMCFine->Scale(fScaleFactor, "width");
+    } else {
+      fMCHist->Scale(fScaleFactor);
+      fMCFine->Scale(fScaleFactor);
+    }
     // if (fMCHist_Modes) fMCHist_Modes->Scale(fScaleFactor, "width");
   }
 
@@ -884,7 +896,6 @@ void Measurement2D::ScaleEvents() {
   for (int i = 0; i < fMCFine->GetNbinsX(); i++) {
     fMCFine->SetBinError(i + 1, fMCFine->GetBinContent(i + 1) * statratiofine[i]);
   }
-
 
   // Clean up
   delete statratio;
@@ -1687,12 +1698,9 @@ void Measurement2D::SetDataValues(std::string dataFile, std::string TH2Dname) {
 
   if (dataFile.find(".root") == std::string::npos) {
     ERR(FTL) << "Error! " << dataFile << " is not a .root file" << std::endl;
-    ERR(FTL) << "Currently only .root file reading is supported (MiniBooNE "
-             "CC1pi+ 2D), but implementing .txt should be dirt easy"
-             << std::endl;
+    ERR(FTL) << "Currently only .root file reading is supported, but implementing .txt should be dirt easy" << std::endl;
     ERR(FTL) << "See me at " << __FILE__ << ":" << __LINE__ << std::endl;
-    exit(-1);
-
+    throw;
   } else {
     TFile* inFile = new TFile(dataFile.c_str(), "READ");
     fDataHist = (TH2D*)(inFile->Get(TH2Dname.c_str())->Clone());
@@ -1944,18 +1952,5 @@ void Measurement2D::SetCovarMatrixFromChol(std::string covarFile, int dim) {
 
   return;
 };
-
-// //********************************************************************
-// void Measurement2D::SetMapValuesFromText(std::string dataFile) {
-// //********************************************************************
-
-//   fMapHist = new TH2I((fName + "_map").c_str(), (fName + fPlotTitles).c_str(),
-//                       fNDataPointsX - 1, fXBins, fNDataPointsY - 1, fYBins);
-
-//   LOG(SAM) << "Reading map from: " << dataFile << std::endl;
-//   PlotUtils::Set2DHistFromText(dataFile, fMapHist, 1.0);
-
-//   return;
-// };
 
 

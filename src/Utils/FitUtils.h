@@ -93,6 +93,9 @@ double GetErecoil_CHARGED(FitEvent *event);
 double Q2QErec(TLorentzVector pmu, double costh, double binding,
                bool neutrino = true);
 
+double Q2QErec(TLorentzVector pmu, TLorentzVector pnu, double binding,
+               bool neutrino = true);
+
 /// Function returns the reconstructed E_{nu} values
 double EnuQErec(TLorentzVector pmu, double costh, double binding,
                 bool neutrino = true);

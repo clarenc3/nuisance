@@ -198,6 +198,11 @@ double FitUtils::Q2QErec(TLorentzVector pmu, double costh, double binding,
   return q2;
 };
 
+double FitUtils::Q2QErec(TLorentzVector Pmu, TLorentzVector Pnu, double binding, bool neutrino) {
+  double q2qe = Q2QErec(Pmu, cos(Pnu.Vect().Angle(Pmu.Vect())), binding, neutrino);
+  return q2qe;
+}
+
 double FitUtils::EnuQErec(double pl, double costh, double binding,
                           bool neutrino) {
   if (pl < 0) return 0.;  // Make sure nobody is silly

@@ -607,6 +607,7 @@ protected:
   bool fIsDiag;       //!< Flag: Only use diagonal bin errors in stats
   bool fIsMask;       //!< Flag: Apply bin masking
   bool fIsRawEvents;  //!< Flag: Only event rates in histograms
+
   bool fIsEnu;        //!< Needs Enu Unfolding
   bool fIsChi2SVD;    //!< Flag: Chi2 SVD Method (DO NOT USE)
   bool fAddNormPen;   //!< Flag: Add normalisation penalty to fi
@@ -619,7 +620,6 @@ protected:
   bool fIsDifXSec;   //!< Flag: Differential XSec
   bool fIsEnu1D;     //!< Flag: Flux Unfolded XSec
   bool fIsChi2;      //!< Flag; Use Chi2 over LL
-
 
   TrueModeStack* fMCHist_Modes; ///< Optional True Mode Stack
 

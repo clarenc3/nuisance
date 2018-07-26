@@ -1,7 +1,3 @@
-//Adrian Orea
-//NEED TO MODIFY
-//I used the file MINERvA_CCinc_XSec_2DEavq3_nu.h as a template
-
 // Copyright 2016 L. Pickering, P Stowell, R. Terri, C. Wilkinson, C. Wret
 
 /*******************************************************************************
@@ -21,22 +17,22 @@
 *    along with NUISANCE.  If not, see <http://www.gnu.org/licenses/>.
 *******************************************************************************/
 
-#ifndef MINERVA_CC0PI_XSEC_2DPTPX_ANTINU_H_SEEN
-#define MINERVA_CC0PI_XSEC_2DPTPX_ANTINU_H_SEEN
+#ifndef MINERVA_CC0PI_XSEC_2D_NU_H_SEEN
+#define MINERVA_CC0PI_XSEC_2D_NU_H_SEEN
 
 #include "Measurement2D.h"
 
 //********************************************************************  
-class MINERvA_CC0pi_XSec_2Dptpx_antinu : public Measurement2D {
+class MINERvA_CC0pi_XSec_2D_nu : public Measurement2D {
 //********************************************************************  
 
  public:
 
   // Constructor
- MINERvA_CC0pi_XSec_2Dptpx_antinu(nuiskey samplekey);
+ MINERvA_CC0pi_XSec_2D_nu(nuiskey samplekey);
 
   // Destructor
-  virtual ~MINERvA_CC0pi_XSec_2Dptpx_antinu() {
+  virtual ~MINERvA_CC0pi_XSec_2D_nu() {
 
     // Remove all the content histograms                     *
     //    for (int i = 0; i < 9; i++)  
@@ -62,8 +58,23 @@ class MINERvA_CC0pi_XSec_2Dptpx_antinu : public Measurement2D {
   void FillEventVariables(FitEvent *event);
   
  protected:
+  // Converted covariance matrix to provide global binning method in GetLikelihood
+  TH2D* covar_th2d;
+  double GetLikelihood();
+
+  // Set up settings based on distribution
+  void SetupDataSettings();
+
+ private:
+  // The distribution privates
+  int fDist;
+  enum Distribution {
+    // Pt Pz
+    kPtPz,
+    // Pt Q2
+    kPtQ2
+  };
   
-  // Cuts
 };
   
 #endif

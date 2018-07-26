@@ -318,6 +318,7 @@ protected:
   //! ApplyNormalisation)
   bool fNoData;      //!< flag whether data plots do not exist (for ratios)
   bool fIsNoWidth;    ///< Flag : Don't scale by bin width
+  bool fBinWidthNormalise; //!< Flag: Does the measurement need bin-width normalisation? True for MiniBooNE CCQE 2D and CC1pi 2D, not true for MINERvA CC0pi 2D
 
   // TEMP OBJECTS TO HANDLE MERGE
   double fXVar, fYVar, fZVar, Mode, Weight;

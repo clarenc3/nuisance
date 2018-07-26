@@ -30,8 +30,8 @@ MINERvA_CC0pi_XSec_1DQ2_nu_proton::MINERvA_CC0pi_XSec_1DQ2_nu_proton(nuiskey sam
   // Sample overview ---------------------------------------------------
   std::string descrip = "MINERvA_CC0pi_XSec_1DQ2_nu_proton sample. \n" \
                         "Target: CH \n" \
-                        "Flux: MINERvA Forward Horn Current nue + nuebar \n" \
-                        "Signal: Any event with 1 electron, any nucleons, and no other FS particles \n";
+                        "Flux: MINERvA Forward Horn Current Low Energy numu \n" \
+                        "Signal: Any event with 1 muon, any nucleons, and no other FS particles \n";
 
   // Setup common settings
   fSettings = LoadSampleSettings(samplekey);

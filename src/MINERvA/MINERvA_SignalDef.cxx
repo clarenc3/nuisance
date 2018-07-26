@@ -308,6 +308,7 @@ namespace SignalDef {
   }
 
   //********************************************************************
+  // Signal definitions for the MINERvA CC0pi PtPz measurement
   bool isCC0pi_MINERvAPTPZ(FitEvent* event, int nuPDG, double emin, double emax){
     //********************************************************************
     // Check it's CCINC
@@ -324,7 +325,7 @@ namespace SignalDef {
     int genie_n_heavy_baryons_plus_pi0s = 0;
     int genie_n_photons       = 0;
 
-    for(int i = 0; i < event->NParticles(); ++i) {
+    for(size_t i = 0; i < event->NParticles(); ++i) {
       FitParticle* p = event->GetParticle(i);
       if (p->Status() != kFinalState) continue;
 
@@ -363,7 +364,7 @@ namespace SignalDef {
     int genie_n_heavy_baryons_plus_pi0s = 0;
     int genie_n_photons       = 0;
 
-    for(int i = 0; i < event->NParticles(); ++i) {
+    for(size_t i = 0; i < event->NParticles(); ++i) {
       FitParticle* p = event->GetParticle(i);
       if (p->Status() != kFinalState) continue;
 

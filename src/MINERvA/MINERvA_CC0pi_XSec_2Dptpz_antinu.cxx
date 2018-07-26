@@ -1,7 +1,3 @@
-//Adrian Orea
-//I used the file MINERvA_CCinc_XSec_2DEavq3_nu.cxx as a template
-//Also, I am fully aware of the naming typo (should be ptpz), but Everything is already named the same way so...
-
 //Copyright 2016 L. Pickering, P Stowell, R. Terri, C. Wilkinson, C. Wret
 
 /*******************************************************************************
@@ -25,14 +21,14 @@
 */
 
 #include "MINERvA_SignalDef.h"
-#include "MINERvA_CC0pi_XSec_2Dptpx_antinu.h"
+#include "MINERvA_CC0pi_XSec_2Dptpz_antinu.h"
 
 //********************************************************************
-MINERvA_CC0pi_XSec_2Dptpx_antinu::MINERvA_CC0pi_XSec_2Dptpx_antinu(nuiskey samplekey) {
+MINERvA_CC0pi_XSec_2Dptpz_antinu::MINERvA_CC0pi_XSec_2Dptpz_antinu(nuiskey samplekey) {
 //********************************************************************
 
   // Sample overview ---------------------------------------------------
-  std::string descrip = "MINERvA_CC0pi_XSec_2Dptpx_antinu sample. \n" \
+  std::string descrip = "MINERvA_CC0pi_XSec_2Dptpz_antinu sample. \n" \
                         "Target: CH \n" \
                         "Flux: MINERvA Medium Energy FHC numu  \n" \
                         "Signal: CC-0pi \n";
@@ -48,7 +44,7 @@ MINERvA_CC0pi_XSec_2Dptpx_antinu::MINERvA_CC0pi_XSec_2Dptpx_antinu(nuiskey sampl
   fSettings.DefineAllowedTargets("C,H");
 
   // CCQELike plot information
-  fSettings.SetTitle("MINERvA_CC0pi_XSec_2Dptpx_antinu");
+  fSettings.SetTitle("MINERvA_CC0pi_XSec_2Dptpz_antinu");
 
   fSettings.SetDataInput(  FitPar::GetDataBase() + "MINERvA/CC0pi/data_2D.txt" );
   fSettings.SetErrorInput( FitPar::GetDataBase() + "MINERvA/CC0pi/error_2D.txt" );
@@ -85,7 +81,7 @@ MINERvA_CC0pi_XSec_2Dptpx_antinu::MINERvA_CC0pi_XSec_2Dptpx_antinu(nuiskey sampl
 };
 
 //********************************************************************
-void MINERvA_CC0pi_XSec_2Dptpx_antinu::FillEventVariables(FitEvent *event) {
+void MINERvA_CC0pi_XSec_2Dptpz_antinu::FillEventVariables(FitEvent *event) {
 //********************************************************************
 
 // Checking to see if there is a Muon
@@ -106,7 +102,7 @@ void MINERvA_CC0pi_XSec_2Dptpx_antinu::FillEventVariables(FitEvent *event) {
 };
 
 //********************************************************************
-bool MINERvA_CC0pi_XSec_2Dptpx_antinu::isSignal(FitEvent *event) {
+bool MINERvA_CC0pi_XSec_2Dptpz_antinu::isSignal(FitEvent *event) {
 //********************************************************************
   return (SignalDef::isCC0pi_anti_MINERvAPTPZ(event, -14, EnuMin, EnuMax)/* && SignalDef::HasProtonMomBelowThreshold(event, 120)*/);
 };

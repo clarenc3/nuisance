@@ -19,9 +19,9 @@
 #include "MINERvA_SignalDef.h"
 #include "MINERvA_CC1pi0_XSec_1D_nu.h"
 
-// Implementation of 2017 MINERvA numu CC1pi0
-// arxiv:1708.03723v1 hep-ex
-// c.wret14@imperial.ac.uk
+/// Implementation of 2017 MINERvA numu CC1pi0
+/// arxiv:1708.03723v1 hep-ex
+/// c.wret14@imperial.ac.uk
 
 //********************************************************************
 void MINERvA_CC1pi0_XSec_1D_nu::SetupDataSettings(){
@@ -137,14 +137,13 @@ void MINERvA_CC1pi0_XSec_1D_nu::SetupDataSettings(){
     }
   }
 
-  // Only have xsec covariance (not shape only)
-
   // Now setup each data distribution and description.
   std::string descrip =  distdescript + \
                          "Target: CH \n"				       \
                          "Flux: MINERvA Forward Horn Current numu ONLY \n"  \
                          "Signal: Any event with 1 muon, and 1pi0 in FS, no mesons, any nucleon(s). W < 1.8" \
                          "Alt Signal: Add in requirement of 1 proton with 100 MeV and sometimes W < 1.4";
+
 
   fSettings.SetDescription(descrip);
   // Specify the data
@@ -169,6 +168,7 @@ MINERvA_CC1pi0_XSec_1D_nu::MINERvA_CC1pi0_XSec_1D_nu(nuiskey samplekey) {
   fSettings.SetEnuRange(1.5, 20.0);
   fSettings.DefineAllowedTargets("C,H");
   fSettings.DefineAllowedSpecies("numu");
+
   SetupDataSettings();
   FinaliseSampleSettings();
 

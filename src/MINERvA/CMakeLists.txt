@@ -65,8 +65,9 @@ MINERvA_CCDIS_XSec_1DEnu_nu.cxx
 MINERvA_CC0pi_XSec_1DQ2_Tgt_nu.cxx
 MINERvA_CC0pi_XSec_1DQ2_TgtRatio_nu.cxx
 
-MINERvA_CC0pi_XSec_2Dptpx_nu.cxx
-MINERvA_CC0pi_XSec_2Dptpx_antinu.cxx
+MINERvA_CC0pi_XSec_2D_nu.cxx
+MINERvA_CC0pi_XSec_1DQ2_nu.cxx
+MINERvA_CC0pi_XSec_2Dptpz_antinu.cxx
 
 MINERvA_CCCOHPI_XSec_1DEnu_nu.cxx
 MINERvA_CCCOHPI_XSec_1DEpi_nu.cxx
@@ -128,8 +129,9 @@ MINERvA_CCDIS_XSec_1DEnu_nu.h
 MINERvA_CC0pi_XSec_1DQ2_Tgt_nu.h
 MINERvA_CC0pi_XSec_1DQ2_TgtRatio_nu.h
 
-MINERvA_CC0pi_XSec_2Dptpx_nu.h
-MINERvA_CC0pi_XSec_2Dptpx_antinu.h
+MINERvA_CC0pi_XSec_2D_nu.h
+MINERvA_CC0pi_XSec_1DQ2_nu.h
+MINERvA_CC0pi_XSec_2Dptpz_antinu.h
 
 MINERvA_CC1pip_XSec_1D_2017Update.h
 

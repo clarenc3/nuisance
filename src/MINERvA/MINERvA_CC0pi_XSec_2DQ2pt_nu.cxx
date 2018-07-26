@@ -1,7 +1,3 @@
-//Adrian Orea
-//I used the file MINERvA_CCinc_XSec_2DEavq3_nu.cxx as a template
-//Also, I am fully aware of the naming typo (should be ptpz), but Everything is already named the same way so...
-
 //Copyright 2016 L. Pickering, P Stowell, R. Terri, C. Wilkinson, C. Wret
 
 /*******************************************************************************
@@ -21,20 +17,16 @@
 *    along with NUISANCE.  If not, see <http://www.gnu.org/licenses/>.
 *******************************************************************************/
 
-/*
-  Author : Adrian Orea
- */
-
 
 #include "MINERvA_SignalDef.h"
-#include "MINERvA_CC0pi_XSec_2Dptpx_nu.h"
+#include "MINERvA_CC0pi_XSec_2DQ2pt_nu.h"
 
 //********************************************************************
-MINERvA_CC0pi_XSec_2Dptpx_nu::MINERvA_CC0pi_XSec_2Dptpx_nu(nuiskey samplekey) {
+MINERvA_CC0pi_XSec_2DQ2pt_nu::MINERvA_CC0pi_XSec_2DQ2pt_nu(nuiskey samplekey) {
 //********************************************************************
 
   // Sample overview ---------------------------------------------------
-  std::string descrip = "MINERvA_CC0pi_XSec_2Dptpx_nu sample. \n" \
+  std::string descrip = "MINERvA_CC0pi_XSec_2DQ2pt_nu sample. \n" \
                         "Target: CH \n" \
                         "Flux: MINERvA Medium Energy FHC numu  \n" \
                         "Signal: CC-0pi \n";
@@ -50,7 +42,7 @@ MINERvA_CC0pi_XSec_2Dptpx_nu::MINERvA_CC0pi_XSec_2Dptpx_nu(nuiskey samplekey) {
   fSettings.DefineAllowedTargets("C,H");
 
   // CCQELike plot information
-  fSettings.SetTitle("MINERvA_CC0pi_XSec_2Dptpx_nu");
+  fSettings.SetTitle("MINERvA_CC0pi_XSec_2DQ2pt_nu");
 
   fSettings.SetDataInput(  FitPar::GetDataBase() + "MINERvA/CC0pi_ptpz_nu/data2D.txt");
   fSettings.SetCovarInput( FitPar::GetDataBase() + "MINERvA/CC0pi_ptpz_nu/covar.txt");
@@ -82,18 +74,19 @@ MINERvA_CC0pi_XSec_2Dptpx_nu::MINERvA_CC0pi_XSec_2Dptpx_nu(nuiskey samplekey) {
 };
 
 //********************************************************************
-void MINERvA_CC0pi_XSec_2Dptpx_nu::FillEventVariables(FitEvent *event) {
+void MINERvA_CC0pi_XSec_2DQ2pt_nu::FillEventVariables(FitEvent *event) {
 //********************************************************************
 
 // Checking to see if there is a Muon
-  if (event->NumFSParticle(13) == 0) 
-	return;
+  if (event->NumFSParticle(13) == 0) return;
 
-  TLorentzVector Pmu  = event->GetHMFSParticle(13)->fP; //I Added this part
+  TLorentzVector Pmu  = event->GetHMFSParticle(13)->fP;
   Double_t px = Pmu.X()/1000;
   Double_t py = Pmu.Y()/1000;
   Double_t pz = Pmu.Z()/1000;
   Double_t pt = sqrt(px*px+py*py);
+  
+  // Q2 
 
   // Set Hist Variables
   fYVar = pz;
@@ -103,7 +96,7 @@ void MINERvA_CC0pi_XSec_2Dptpx_nu::FillEventVariables(FitEvent *event) {
 };
 
 //********************************************************************
-bool MINERvA_CC0pi_XSec_2Dptpx_nu::isSignal(FitEvent *event) {
+bool MINERvA_CC0pi_XSec_2DQ2pt_nu::isSignal(FitEvent *event) {
 //********************************************************************
   return SignalDef::isCC0pi_MINERvAPTPZ(event, 14, EnuMin, EnuMax);
   

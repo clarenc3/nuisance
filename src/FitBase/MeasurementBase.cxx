@@ -33,6 +33,7 @@ MeasurementBase::MeasurementBase(void) {
   fNoData = false;
   fInput = NULL;
   NSignal = 0;
+  fIsNoWidth = false;
 
   // Set the default values
   // After-wards this gets set in SetupMeasurement
