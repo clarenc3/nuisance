@@ -515,6 +515,7 @@ void PlotUtils::FluxUnfoldedScaling(TH1D* mcHist, TH1D* fhist, TH1D* ehist,
   return;
 };
 
+
 // MOVE TO GENERAL UTILS
 //********************************************************************
 void PlotUtils::Set2DHistFromText(std::string dataFile, TH2* hist, double norm,
@@ -523,6 +524,12 @@ void PlotUtils::Set2DHistFromText(std::string dataFile, TH2* hist, double norm,
 
   std::string line;
   std::ifstream data(dataFile.c_str(), std::ifstream::in);
+  // Check file is open
+  if (!data.good()) {
+    ERR(FTL) << "Could not open file " << dataFile << " for processing" << std::endl;
+    ERR(FTL) << "Are you sure it exists?" << std::endl;
+    throw;
+  }
 
   int yBin = 0;
   while (std::getline(data >> std::ws, line, '\n')) {
@@ -535,8 +542,6 @@ void PlotUtils::Set2DHistFromText(std::string dataFile, TH2* hist, double norm,
     }
     yBin++;
   }
-
-  return;
 }
 
 // MOVE TO GENERAL UTILS

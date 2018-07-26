@@ -238,6 +238,7 @@ void RunGENIEPrepare(std::string input, std::string flux, std::string target,
 
   // Get Flux Hist
   std::vector<std::string> fluxvect = GeneralUtils::ParseToStr(flux, ",");
+  for (size_t i = 0; i < fluxvect.size(); ++i) std::cout << fluxvect[i] << std::endl;
   TH1* fluxhist = NULL;
   if (fluxvect.size() == 3) {
     double from = GeneralUtils::StrToDbl(fluxvect[0]);
@@ -270,6 +271,8 @@ void RunGENIEPrepare(std::string input, std::string flux, std::string target,
       fluxhist->SetDirectory(0);
     }
   } else if (fluxvect.size() == 1) {
+    LOG(WRN) << "Warning: only one flux argument passed: " << fluxvect[0] << std::endl;
+    LOG(WRN) << "Generating in mono-energetic mode" << std::endl;
     MonoEnergy = GeneralUtils::StrToDbl(fluxvect[0]);
     RunGENIEPrepareMono(input, target, output);
     return;
@@ -337,8 +340,7 @@ void RunGENIEPrepare(std::string input, std::string flux, std::string target,
     std::string inter = mode;
 
     // Fill lists of Unique IDS
-    if (std::find(targetids.begin(), targetids.end(), targ) ==
-        targetids.end()) {
+    if (std::find(targetids.begin(), targetids.end(), targ) == targetids.end()) {
       targetids.push_back(targ);
     }
 
@@ -397,8 +399,7 @@ void RunGENIEPrepare(std::string input, std::string flux, std::string target,
   std::map<std::string, TH1D*> modeavg;
 
   TDirectory* inddir = (TDirectory*)outputfile->Get("IndividualGENIESplines");
-  if (!inddir)
-    inddir = (TDirectory*)outputfile->mkdir("IndividualGENIESplines");
+  if (!inddir) inddir = (TDirectory*)outputfile->mkdir("IndividualGENIESplines");
   inddir->cd();
 
   // Loop over GENIE ID's and get MEC count

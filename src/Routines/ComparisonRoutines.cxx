@@ -415,8 +415,6 @@ void ComparisonRoutines::Run() {
     }
   }
 
-
-
   return;
 }
 

@@ -15,8 +15,8 @@
 <!-- # 4 Reconfigure Loops -->
 <!-- # 5 Every Event print out (SHOUT) -->
 <!-- # -1 DEBUGGING -->
-<config verbosity='5'/>
-<config VERBOSITY='5'/>
+<config verbosity='4'/>
+<config VERBOSITY='4'/>
 
 <!-- # ERROR goes from -->
 <!-- # 0 NONE -->
@@ -196,6 +196,7 @@
 -->
 
 <config UseShapeCovar="0" />
+<!-- For old MINERvA CC0pi 2Dptpz measurement, can be deleted safely -->
 <config CC0piNBINS="156" />
 
 </nuisance>

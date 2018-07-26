@@ -112,7 +112,6 @@ void SampleSettings::SetErrorInput(std::string val) {
 };
 
 
-
 void SampleSettings::SetCovarInput(std::string val) {
 	SetDefault("covar", val);
 };
@@ -202,7 +201,7 @@ void SampleSettings::Write(std::string name) {
 
 	TPaveText pt = TPaveText(0.05, 0.05, 0.95, 0.80);
 	std::vector<std::string> keys = fKeyValues.GetAllKeys();
-	for (int i = 0; i < keys.size(); i++) {
+	for (size_t i = 0; i < keys.size(); i++) {
 
 		std::string keyval = fKeyValues.GetS(keys[i]);
 		std::vector<std::string> lines = GeneralUtils::ParseToStr(keyval, "\n");
@@ -211,7 +210,7 @@ void SampleSettings::Write(std::string name) {
 			pt.AddText( ("#bullet #bf{" + keys[i] + "} : " + fKeyValues.GetS(keys[i])).c_str() );
 		} else {
 			pt.AddText( ("#bullet #bf{" + keys[i] + "} : ").c_str() );
-			for (int j = 0; j < lines.size(); j++) {
+			for (size_t j = 0; j < lines.size(); j++) {
 				pt.AddText(("   |-->  " + lines[j]).c_str() );
 			}
 		}

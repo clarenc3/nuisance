@@ -121,7 +121,7 @@ Double_t StatUtils::GetChi2FromCov(TH1D* data, TH1D* mc, TMatrixDSym* invcov,
       double mcerr = calc_mc->GetBinError(i + 1) * sqrt(covar_scale);
       double oldval = (*newcov)(i, i);
 
-      std::cout << "Adding cov stat " << mcerr * mcerr << " to "
+      LOG(DEB) << "Adding cov stat " << mcerr * mcerr << " to "
                 << (*newcov)(i, i) << std::endl;
       (*newcov)(i, i) = oldval + mcerr * mcerr;
     }
@@ -150,6 +150,7 @@ Double_t StatUtils::GetChi2FromCov(TH1D* data, TH1D* mc, TMatrixDSym* invcov,
                     << i << " [" << calc_data->GetXaxis()->GetBinLowEdge(j + 1)
                     << " -- " << calc_data->GetXaxis()->GetBinUpEdge(j + 1)
                     << "].");
+      // Only calculate chi2 contributions for bins which are good
       if ((calc_data->GetBinContent(i + 1) != 0 ||
            calc_mc->GetBinContent(i + 1) != 0) &&
           ((*calc_cov)(i, j) != 0)) {
@@ -590,10 +591,12 @@ TH1D* StatUtils::ThrowHistogram(TH1D* hist, TMatrixDSym* cov, bool throwdiag,
   for (int i = 0; i < hist->GetNbinsX(); i++) {
     // By Default the errors on the histogram are thrown uncorrelated to the
     // other errors
+    /*
     //    if (throwdiag) {
     //      calc_hist->SetBinContent(i + 1, (calc_hist->GetBinContent(i + 1) + \
     //				       gRandom->Gaus(0.0, 1.0) * calc_hist->GetBinError(i + 1)) );
     //    }
+    */
 
     // If a covariance is provided that is also thrown
     if (cov) {
@@ -923,7 +926,7 @@ void StatUtils::SetDataErrorFromCov(TH1D* data, TMatrixDSym* cov,
 
   // Check
   if (cov->GetNrows() != data->GetNbinsX()) {
-    ERR(WRN) << "Nrows in cov don't match nbins in data for SetDataErrorFromCov"
+    ERR(FTL) << "Nrows in cov don't match nbins in data for SetDataErrorFromCov"
              << std::endl;
   }
 
@@ -1031,6 +1034,7 @@ TMatrixDSym* StatUtils::ExtractShapeOnlyCovar(TMatrixDSym* full_covar,
 }
 
 //*******************************************************************
+/// Generate a map for 2D measurements with covariances
 TH2I* StatUtils::GenerateMap(TH2D* hist) {
   //*******************************************************************
 
@@ -1082,7 +1086,6 @@ TH1D* StatUtils::MapToTH1D(TH2D* hist, TH2I* map) {
     }
   }
 
-  // return
   return newhist;
 }
 
@@ -1145,7 +1148,7 @@ TMatrixD* StatUtils::GetMatrixFromTextFile(std::string covfile, int dimx,
       std::vector<double> entries = GeneralUtils::ParseToDbl(line, " ");
 
       if (entries.size() <= 1) {
-        ERR(WRN) << "StatUtils::GetMatrixFromTextFile, matrix only has <= 1 "
+        ERR(FTL) << "StatUtils::GetMatrixFromTextFile, matrix only has <= 1 "
                     "entries on this line: "
                  << row << std::endl;
       }

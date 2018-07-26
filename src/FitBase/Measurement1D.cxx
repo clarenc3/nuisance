@@ -873,7 +873,6 @@ void Measurement1D::ScaleEvents() {
     }
   }
 
-
   // Scaling for raw event rates
   if (fIsRawEvents) {
     double datamcratio = fDataHist->Integral() / fMCHist->Integral();
@@ -892,7 +891,6 @@ void Measurement1D::ScaleEvents() {
     PlotUtils::FluxUnfoldedScaling(fMCFine, GetFluxHistogram(),
                                    GetEventHistogram(), fScaleFactor,
                                    fNEvents);
-
 
     // if (fMCHist_Modes) {
     // PlotUtils::FluxUnfoldedScaling(fMCHist_Modes, GetFluxHistogram(),
