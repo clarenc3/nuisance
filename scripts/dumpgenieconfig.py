@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from ROOT import TFile, TFolder, TObjString
 import sys
 
@@ -25,11 +27,15 @@ def ExpandGlobalList(keydir):
         print "GLOBAL : ", obj.GetName()
         ExpandKeys(obj,"GLOBAL : ")
 
-if __name__=="__main__":
+if __name__ == "__main__":
 
-    myfile = TFile(sys.argv[1],"READ")
-    configs = myfile.Get("gconfig")
-    ExpandKeys(configs,"")
+  if len(sys.argv) != 2:
+    print "Need one argument, the GENIE root file"
+    sys.exit(-1)
 
-    print "\n# Global List #\n"
-    ExpandGlobalList(configs)
+  myfile = TFile(sys.argv[1],"READ")
+  configs = myfile.Get("gconfig")
+  ExpandKeys(configs,"")
+
+  print "\n# Global List #\n"
+  ExpandGlobalList(configs)
