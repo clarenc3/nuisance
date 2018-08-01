@@ -43,18 +43,19 @@ enum NUISANCESyst {
 	kMINERvARW_NormCCQE,
 	kMINERvARW_NormCCMEC,
 	kMINERvARW_NormCCRES,
+	//kMINERvARW_NormCCNonRES1pi,
 
 	kMINERvARW_RikRPA_ApplyRPA,
 	kMINERvARW_RikRPA_LowQ2,
 	kMINERvARW_RikRPA_HighQ2,
 
 	kMINERvARW_RikRESRPA_ApplyRPA,
-    kMINERvARW_RikRESRPA_LowQ2,
+        kMINERvARW_RikRESRPA_LowQ2,
 	kMINERvARW_RikRESRPA_HighQ2,
 
-    kSBLOsc_Distance,
-    kSBLOsc_MassSplitting,
-    kSBLOsc_Sin2Theta,
+        kSBLOsc_Distance,
+        kSBLOsc_MassSplitting,
+        kSBLOsc_Sin2Theta,
 
 	kNUISANCEDial_LAST
 };

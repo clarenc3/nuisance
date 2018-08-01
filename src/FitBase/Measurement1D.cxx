@@ -127,13 +127,13 @@ void Measurement1D::FinaliseSampleSettings() {
   }
 
   if (fIsEnu1D && fIsRawEvents) {
-    LOG(SAM) << "Found 1D Enu XSec distribution AND fIsRawEvents, is this "
+    ERR(FTL) << "Found 1D Enu XSec distribution AND fIsRawEvents, is this "
              "really correct?!"
              << std::endl;
-    LOG(SAM) << "Check experiment constructor for " << fName
+    ERR(FTL) << "Check experiment constructor for " << fName
              << " and correct this!" << std::endl;
-    LOG(SAM) << "I live in " << __FILE__ << ":" << __LINE__ << std::endl;
-    exit(-1);
+    ERR(FTL) << "I live in " << __FILE__ << ":" << __LINE__ << std::endl;
+    throw;
   }
 
   if (!fRW) fRW = FitBase::GetRW();
@@ -148,8 +148,8 @@ void Measurement1D::FinaliseSampleSettings() {
 
   if (fAddNormPen) {
     if (fNormError <= 0.0) {
-      ERR(WRN) << "Norm error for class " << fName << " is 0.0!" << std::endl;
-      ERR(WRN) << "If you want to use it please add fNormError=VAL" << std::endl;
+      ERR(FTL) << "Norm error for class " << fName << " is 0.0!" << std::endl;
+      ERR(FTL) << "If you want to use it please add fNormError=VAL" << std::endl;
       throw;
     }
   }
@@ -547,6 +547,20 @@ void Measurement1D::FinaliseMeasurement() {
     throw;
   }
 
+  // Check if given covariance has good units (not E-80 etc but normalised to 1E76
+  if (fFullCovar) {
+    for (int i = 0; i < fFullCovar->GetNrows(); ++i) {
+      for (int j = 0; j < fFullCovar->GetNrows(); ++j) {
+        double entry = fabs((*fFullCovar)(i,j));
+        if (entry < 1E-60) {
+          ERR(FTL) << "Found a very small entry (" << entry << ") in covariance matrix, implying this covariance is not scaled to 1E-76" << std::endl;
+          ERR(FTL) << "Please scale all errors in covariance relative this to ensure good covariance decomposition" << std::endl;
+          throw;
+        }
+      }
+    }
+  }
+
   // Make sure covariances are setup
   if (!fFullCovar) {
     fIsDiag = true;
@@ -555,6 +569,11 @@ void Measurement1D::FinaliseMeasurement() {
 
   if (!covar) {
     covar = StatUtils::GetInvert(fFullCovar);
+    for (int i = 0; i < covar->GetNrows(); ++i) {
+      for (int j = 0; j < covar->GetNcols(); ++j) {
+        std::cout << i << ", " << j << " = " << (*covar)(i,j) << std::endl;
+      }
+    }
   }
 
   if (!fDecomp) {
@@ -563,6 +582,7 @@ void Measurement1D::FinaliseMeasurement() {
 
   // Push the diagonals of fFullCovar onto the data histogram
   // Comment this out until the covariance/data scaling is consistent!
+  // Check bin errors
   StatUtils::SetDataErrorFromCov(fDataHist, fFullCovar, 1E-38);
 
   // If shape only, set covar and fDecomp using the shape-only matrix (if set)
@@ -636,8 +656,6 @@ void Measurement1D::FinaliseMeasurement() {
     fMCWeighted->GetYaxis()->SetTitle("Weighted Events");
 
   }
-
-
 }
 
 //********************************************************************
@@ -966,7 +984,6 @@ double Measurement1D::GetLikelihood() {
     PlotUtils::MaskBins(fMCHist, fMaskHist);
   }
 
-
   // Sort Shape Scaling
   double scaleF = 0.0;
   // TODO Include !fIsRawEvents
@@ -983,7 +1000,6 @@ double Measurement1D::GetLikelihood() {
   // Likelihood Calculation
   double stat = 0.;
   if (fIsChi2) {
-
     if (fIsRawEvents) {
       stat = StatUtils::GetChi2FromEventRate(fDataHist, fMCHist, fMaskHist);
     } else if (fIsDiag) {
@@ -991,7 +1007,6 @@ double Measurement1D::GetLikelihood() {
     } else if (!fIsDiag and !fIsRawEvents) {
       stat = StatUtils::GetChi2FromCov(fDataHist, fMCHist, covar, fMaskHist);
     }
-
   }
 
   // Sort Penalty Terms

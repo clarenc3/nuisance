@@ -39,11 +39,6 @@ public:
 
   ///\brief Determine Q2 from the leading proton
   void FillEventVariables(FitEvent *event);
-
- private:
-  // Converted covariance matrix to provide global binning method in GetLikelihood
-  //TH2D* covar_th2d;
-  //double GetLikelihood();
 };
 
 #endif

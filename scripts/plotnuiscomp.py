@@ -3,11 +3,14 @@ from ROOT import *
 import os
 import sys
 
+c1 = TCanvas("c1","c1",1024,1024)
+
 gColorList = [kRed, kGreen, kBlue, kYellow, kOrange, kBlack]
 
 gStyle.SetOptStat(0)
 gStyle.SetPadGridX(1)
 gStyle.SetPadGridY(1)
+gStyle.SetOptTitle(1)
 
 def RemoveAfter(string, suffix):
   return string[:string.index(suffix)]
@@ -73,15 +76,13 @@ def DrawDataMC(keyname, filelist):
         for singledata in singledatalist:
             miny = min([singledata.GetMinimum(),miny])
             maxy = max([singledata.GetMaximum(),maxy])
-    widthy = maxy - miny
-
+    widthy = maxy - miny 
     # Assign Ranges to data
     if "1D" in keyname:    data.GetYaxis().SetRangeUser(0, maxy + 0.3*widthy)
     elif "2D" in keyname:  data.GetZaxis().SetRangeUser(0, maxy + 0.3*widthy)
 
     # Set fancy title
     fancyname=data.GetTitle()
-    print fancyname
     fancyname = fancyname.replace("_", " ")
     fancyname = fancyname.replace("data", "")
     fancyname = fancyname.replace("pi0", "#pi^{0}")
@@ -96,8 +97,9 @@ def DrawDataMC(keyname, filelist):
       axis=axis.split()[0]
       fancyname = fancyname + str(axis)
     
-    print fancyname
     data.SetTitle(fancyname)
+    c1.cd()
+    c1.Clear()
 
     # Draw Plots 1D
     if "1D" in keyname:   
@@ -123,12 +125,7 @@ def DrawDataMC(keyname, filelist):
     leg.SetFillStyle(0)
     leg.SetFillColorAlpha(0,0.0)
     leg.SetBorderSize(0)
-    leg.Draw("same")
-
-    gStyle.SetOptTitle(1)
-    gPad.SetGridx(1)
-    gPad.SetGridy(1)
-    gPad.Update()
+    leg.Draw()
 
     singlemclist.append(data)
     return singlemclist
@@ -139,35 +136,26 @@ if __name__=="__main__":
       print "Need at least two arguments:",sys.argv[0]," outputname, inputfile1, inputfile2..."
       sys.exit()
 
-    print sys.argv
-    c1 = TCanvas("c1","c1",1024,1024)
     c1.cd()
-
     # Make filelist
     allfiles = []
 
     for i in xrange(2, len(sys.argv)):
         print "Reading ", i, sys.argv[i]
-        
         # split by comma
         splitname = sys.argv[i].split(",")
-
         # Get First
         if (os.path.isfile(splitname[0])):
-          
             # Get File
             newfile = (TFile(splitname[0],"READ"))
             if not newfile: 
                 print "File is not a ROOT file : ", splitname[0]
                 sys.exit()
-                
             # Set Name
             name = splitname[0].replace(".root","")
             if len(splitname) > 1:
                 name = splitname[1]
-            
             allfiles.append([newfile, name])
-
 
     print allfiles
 
@@ -203,5 +191,5 @@ if __name__=="__main__":
 
     # Now save the legend again to close...
     leg.Draw()
-    gPad.Update()
-    gPad.Print(outputfile + ")")
+    c1.Update()
+    c1.Print(outputfile + ")")

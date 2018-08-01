@@ -48,13 +48,13 @@ void MINERvA_CC0pi_XSec_2D_nu::SetupDataSettings() {
     case (kPtPz):
       datafile = "MINERvA/CC0pi_ptpz/ptpz_data.root";
       corrfile = "MINERvA/CC0pi_ptpz/ptpz_cov.root";
-      titles    = "MINERvA CC0#pi #nu_{#mu} p_{t} p_{z};p_{t} (GeV);p_{z} (GeV);d^{2}#sigma/dP_{t}dP_{z} (cm^{2}/GeV^{2}/nucleon)";
+      titles    = "MINERvA CC0#pi #nu_{#mu} p_{t} p_{z};p_{z} (GeV);p_{t} (GeV);d^{2}#sigma/dP_{t}dP_{z} (cm^{2}/GeV^{2}/nucleon)";
       distdescript = "MINERvA_CC0pi_XSec_2Dptpz_nu sample";
       histname = "h_pzmu_ptmu_data_nobck_unfold_effcor_cross_section_CV_WithErr";
       break;
     case (kPtQ2):
-      datafile = "MINERvA/CC0pi_ptpz/q2_data.root";
-      corrfile = "MINERvA/CC0pi_ptpz/q2_Cov.root";
+      datafile = "MINERvA/CC0pi_ptpz/pt_q2_data.root";
+      corrfile = "MINERvA/CC0pi_ptpz/pt_q2_cov.root";
       titles    = "MINERvA CC0#pi #nu_{#mu} p_{t} Q^{2}_{QE};p_t{z} (GeV);Q^{2}_{QE} (GeV^{2});d^{2}#sigma/dP_{t}dQ^{2}_{QE} (cm^{2}/GeV^{3}/nucleon)";
       distdescript = "MINERvA_CC0pi_XSec_2DptQ2_nu sample";
       histname = "h_q2_ptmu_data_nobck_unfold_effcor_cross_section_CV_WithErr";
@@ -78,12 +78,12 @@ void MINERvA_CC0pi_XSec_2D_nu::SetupDataSettings() {
   // The input ROOT file
   fSettings.SetDataInput(  FitPar::GetDataBase() + datafile);
   // The covariance matrix ROOT file
-  if (fDist == kPtPz) {
+  //if (fDist == kPtPz) {
     fSettings.SetCovarInput( FitPar::GetDataBase() + corrfile);
-  } else {
-    ERR(WRN) << " no covariance matrix available for PtQ2" << std::endl;
-    ERR(WRN) << " ask Dan Ruterbories nicely and he may provide one" << std::endl;
-  }
+  //} else {
+    //ERR(WRN) << " no covariance matrix available for PtQ2" << std::endl;
+    //ERR(WRN) << " ask Dan Ruterbories nicely and he may provide one" << std::endl;
+  //}
 
   // Set the data file
   SetDataValues(fSettings.GetDataInput(), histname);
@@ -110,12 +110,13 @@ MINERvA_CC0pi_XSec_2D_nu::MINERvA_CC0pi_XSec_2D_nu(nuiskey samplekey) {
   // Set the mapping values and the covariance matrix files
   //SetMapValuesFromText( fSettings.GetMapInput() );
   // Also have to make our own covariance matrix to exclude the under and overflow
-  if (fDist == kPtPz) {
-    TMatrixDSym* tempmat = StatUtils::GetCovarFromRootFile(fSettings.GetCovarInput(), "TMatrixDBase");
-    fFullCovar = tempmat;
-  } else {
-    SetCovarFromDiagonal();
-  }
+  //if (fDist == kPtPz) {
+  TMatrixDSym* tempmat = StatUtils::GetCovarFromRootFile(fSettings.GetCovarInput(), "TMatrixDBase");
+  fFullCovar = tempmat;
+
+  //} else {
+    //SetCovarFromDiagonal();
+  //}
 
   /*
   // Now we cut out every first and last to exclude under and overflow
@@ -165,32 +166,30 @@ MINERvA_CC0pi_XSec_2D_nu::MINERvA_CC0pi_XSec_2D_nu(nuiskey samplekey) {
   delete tempmat;
   */
 
-  if (fDist == kPtPz) {
-    // Just check that the data error and covariance are the same
-    for (int i = 0; i < fFullCovar->GetNrows(); ++i) {
-      for (int j = 0; j < fFullCovar->GetNcols(); ++j) {
-        // Get the global bin
-        int xbin1, ybin1, zbin1;
-        fDataHist->GetBinXYZ(i, xbin1, ybin1, zbin1);
-        double xlo1 = fDataHist->GetXaxis()->GetBinLowEdge(xbin1);
-        double xhi1 = fDataHist->GetXaxis()->GetBinLowEdge(xbin1+1);
-        double ylo1 = fDataHist->GetYaxis()->GetBinLowEdge(ybin1);
-        double yhi1 = fDataHist->GetYaxis()->GetBinLowEdge(ybin1+1);
-        if (xlo1 < fDataHist->GetXaxis()->GetBinLowEdge(1) ||
-            ylo1 < fDataHist->GetYaxis()->GetBinLowEdge(1) ||
-            xhi1 > fDataHist->GetXaxis()->GetBinLowEdge(fDataHist->GetXaxis()->GetNbins()+1) ||
-            yhi1 > fDataHist->GetYaxis()->GetBinLowEdge(fDataHist->GetYaxis()->GetNbins()+1)) continue;
-        double data_error = fDataHist->GetBinError(xbin1, ybin1);
-        double cov_error = sqrt((*fFullCovar)(i,i));
-        if (data_error != cov_error) {
-          std::cerr << "Error on data is different to that of covariance" << std::endl;
-          std::cerr << "Data error: " << data_error << std::endl;
-          std::cerr << "Cov error: " << cov_error << std::endl;
-          std::cerr << "Data/Cov: " << data_error/cov_error << std::endl;
-          std::cerr << "For x: " << xlo1 << "-" << xhi1 << std::endl;
-          std::cerr << "For y: " << ylo1 << "-" << yhi1 << std::endl;
-          throw;
-        }
+  // Just check that the data error and covariance are the same
+  for (int i = 0; i < fFullCovar->GetNrows(); ++i) {
+    for (int j = 0; j < fFullCovar->GetNcols(); ++j) {
+      // Get the global bin
+      int xbin1, ybin1, zbin1;
+      fDataHist->GetBinXYZ(i, xbin1, ybin1, zbin1);
+      double xlo1 = fDataHist->GetXaxis()->GetBinLowEdge(xbin1);
+      double xhi1 = fDataHist->GetXaxis()->GetBinLowEdge(xbin1+1);
+      double ylo1 = fDataHist->GetYaxis()->GetBinLowEdge(ybin1);
+      double yhi1 = fDataHist->GetYaxis()->GetBinLowEdge(ybin1+1);
+      if (xlo1 < fDataHist->GetXaxis()->GetBinLowEdge(1) ||
+          ylo1 < fDataHist->GetYaxis()->GetBinLowEdge(1) ||
+          xhi1 > fDataHist->GetXaxis()->GetBinLowEdge(fDataHist->GetXaxis()->GetNbins()+1) ||
+          yhi1 > fDataHist->GetYaxis()->GetBinLowEdge(fDataHist->GetYaxis()->GetNbins()+1)) continue;
+      double data_error = fDataHist->GetBinError(xbin1, ybin1);
+      double cov_error = sqrt((*fFullCovar)(i,i));
+      if (data_error != cov_error) {
+        std::cerr << "Error on data is different to that of covariance" << std::endl;
+        std::cerr << "Data error: " << data_error << std::endl;
+        std::cerr << "Cov error: " << cov_error << std::endl;
+        std::cerr << "Data/Cov: " << data_error/cov_error << std::endl;
+        std::cerr << "For x: " << xlo1 << "-" << xhi1 << std::endl;
+        std::cerr << "For y: " << ylo1 << "-" << yhi1 << std::endl;
+        throw;
       }
     }
   }
@@ -291,11 +290,10 @@ bool MINERvA_CC0pi_XSec_2D_nu::isSignal(FitEvent *event) {
 double MINERvA_CC0pi_XSec_2D_nu::GetLikelihood() {
   //********************************************************************
 
-
   // The calculated chi2
   double chi2 = 0.0;
 
-  if (fDist == kPtPz) {
+  //if (fDist == kPtPz) {
     // Support shape comparisons
     double scaleF = fDataHist->Integral() / fMCHist->Integral();
     if (fIsShape) {
@@ -374,9 +372,9 @@ double MINERvA_CC0pi_XSec_2D_nu::GetLikelihood() {
     }
 
     fLikelihood = chi2;
-  } else {
-    chi2 = Measurement2D::GetLikelihood();
-  }
+  //} else {
+    //chi2 = Measurement2D::GetLikelihood();
+  //}
 
   return chi2;
 };

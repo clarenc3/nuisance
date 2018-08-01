@@ -90,6 +90,10 @@ double SBLOscWeightCalc::GetSBLOscWeight(double E) {
 }
 
 GaussianModeCorr::GaussianModeCorr() {
+
+  // Apply the usual Gauss, not the tilt shift method
+  fMethod = true;
+
   // Init
   fApply_CCQE = false;
   fGausVal_CCQE[kPosNorm] = 0.0;
@@ -228,60 +232,131 @@ double GaussianModeCorr::CalcWeight(BaseFitEvt* evt) {
 }
 
 double GaussianModeCorr::GetGausWeight(double q0, double q3, double vals[]) {
-  // // CCQE Without Suppression
-  // double Norm = 4.82788679036;
-  // double Tilt = 2.3501416116;
-  // double Pq0  = 0.363964889702;
-  // double Wq0  = 0.133976806938;
-  // double Pq3  = 0.431769740224;
-  // double Wq3  = 0.207666663434;
+  // The weight
+  double w = 1.0;
 
-  // // Also add for CCQE at the end
-  // return (w > 1.0) ? w : 1.0;
+  // Use tilt-shift method by Patrick
+  if (fMethod) {
+    if (fDebugStatements) {
+      std::cout << "Using Patrick gaussian" << std::endl;
+    }
+    // // CCQE Without Suppression
+    // double Norm = 4.82788679036;
+    // double Tilt = 2.3501416116;
+    // double Pq0  = 0.363964889702;
+    // double Wq0  = 0.133976806938;
+    // double Pq3  = 0.431769740224;
+    // double Wq3  = 0.207666663434;
 
-  // // 2p2h with suppression
-  // double Norm = 15.967;
-  // double Tilt = -0.455655;
-  // double Pq0  = 0.214598;
-  // double Wq0  = 0.0291061;
-  // double Pq3  = 0.480194;
-  // double Wq3  = 0.134588;
+    // // Also add for CCQE at the end
+    // return (w > 1.0) ? w : 1.0;
 
-  double Norm = vals[kPosNorm];
-  double Tilt = vals[kPosTilt];
-  double Pq0 = vals[kPosPq0];
-  double Wq0 = vals[kPosWq0];
-  double Pq3 = vals[kPosPq3];
-  double Wq3 = vals[kPosWq3];
+    // // 2p2h with suppression
+    // double Norm = 15.967;
+    // double Tilt = -0.455655;
+    // double Pq0  = 0.214598;
+    // double Wq0  = 0.0291061;
+    // double Pq3  = 0.480194;
+    // double Wq3  = 0.134588;
 
-  double a = cos(Tilt) * cos(Tilt) / (2 * Wq0 * Wq0);
-  a += sin(Tilt) * sin(Tilt) / (2 * Wq3 * Wq3);
+    double Norm = vals[kPosNorm];
+    double Tilt = vals[kPosTilt];
+    double Pq0 = vals[kPosPq0];
+    double Wq0 = vals[kPosWq0];
+    double Pq3 = vals[kPosPq3];
+    double Wq3 = vals[kPosWq3];
 
-  double b = -sin(2 * Tilt) / (4 * Wq0 * Wq0);
-  b += sin(2 * Tilt) / (4 * Wq3 * Wq3);
+    for (int i = 0; i< 6; ++i) std::cout << vals[i] << std::endl;
 
-  double c = sin(Tilt) * sin(Tilt) / (2 * Wq0 * Wq0);
-  c += cos(Tilt) * cos(Tilt) / (2 * Wq3 * Wq3);
+    double a = cos(Tilt) * cos(Tilt) / (2 * Wq0 * Wq0);
+    a += sin(Tilt) * sin(Tilt) / (2 * Wq3 * Wq3);
 
-  double w = Norm;
-  w *= exp(-a * (q0 - Pq0) * (q0 - Pq0));
-  w *= exp(+2.0 * b * (q0 - Pq0) * (q3 - Pq3));
-  w *= exp(-c * (q3 - Pq3) * (q3 - Pq3));
+    double b = -sin(2 * Tilt) / (4 * Wq0 * Wq0);
+    b += sin(2 * Tilt) / (4 * Wq3 * Wq3);
 
-  if (fDebugStatements) {
-    std::cout << "Applied Tilt " << Tilt << " " << cos(Tilt) << " " << sin(Tilt)
-              << std::endl;
-    std::cout << "abc = " << a << " " << b << " " << c << std::endl;
-    std::cout << "Returning " << Norm << " " << Pq0 << " " << Wq0 << " " << Pq3
-              << " " << Wq3 << " " << w << std::endl;
-  }
+    double c = sin(Tilt) * sin(Tilt) / (2 * Wq0 * Wq0);
+    c += cos(Tilt) * cos(Tilt) / (2 * Wq3 * Wq3);
 
-  if (w != w || std::isnan(w) || w < 0.0) {
-    w = 0.0;
-  }
+    w = Norm;
+    w *= exp(-a * (q0 - Pq0) * (q0 - Pq0));
+    w *= exp(+2.0 * b * (q0 - Pq0) * (q3 - Pq3));
+    w *= exp(-c * (q3 - Pq3) * (q3 - Pq3));
 
-  if (w < 1.0 and !fAllowSuppression) {
-    w = 1.0;
+    if (fDebugStatements) {
+      std::cout << "Applied Tilt " << Tilt << " " << cos(Tilt) << " " << sin(Tilt)
+        << std::endl;
+      std::cout << "abc = " << a << " " << b << " " << c << std::endl;
+      std::cout << "Returning " << Norm << " " << Pq0 << " " << Wq0 << " " << Pq3
+        << " " << Wq3 << " " << w << std::endl;
+    }
+
+    if (w != w || std::isnan(w) || w < 0.0) {
+      w = 0.0;
+    }
+
+    if (w < 1.0 and !fAllowSuppression) {
+      w = 1.0;
+    }
+
+    // Use the MINERvA Gaussian method
+  } else {
+    /*
+     * From MINERvA and Daniel Ruterbories:
+     * http://cdcvs.fnal.gov/cgi-bin/public-cvs/cvsweb-public.cgi/AnalysisFramework/Ana/CCQENu/ana_common/data/?cvsroot=mnvsoft
+     * 2p2h:
+     * 18.5896
+     * 0.256895
+     * 0.509694
+     * 0.0528243
+     * 0.125003
+     * 0.949053
+     *
+     * QE:
+     * 12.0857
+     * 0.213998
+     * 0.390444
+     * 0.0454559
+     * 0.110803
+     * 0.857289
+     *
+     * MEC best fit:?
+     * 12.0015
+     * 0.272204
+     * 0.530213
+     * 0.078976
+     * 0.166203
+     * 0.884621
+       */
+    if (fDebugStatements) {
+      std::cout << "Using MINERvA Gaussian" << std::endl;
+    }
+
+    double norm = vals[kPosNorm];
+    double meanq0 = vals[kPosTilt];
+    double meanq3 = vals[kPosPq0];
+    double sigmaq0 = vals[kPosWq0];
+    double sigmaq3 = vals[kPosPq3];
+    double corr = vals[kPosWq3];
+
+    /*
+    double Norm = vals[kPosNorm];
+    double Tilt = vals[kPosTilt];
+    double Pq0 = vals[kPosPq0];
+    double Wq0 = vals[kPosWq0];
+    double Pq3 = vals[kPosPq3];
+    double Wq3 = vals[kPosWq3];
+    */
+
+    std::cout << q0 << " " << meanq0 << std::endl;
+    std::cout << q3 << " " << meanq3 << std::endl;
+
+    double z = (q0 - meanq0)*(q0 - meanq0) /sigmaq0/sigmaq0
+      + (q3 - meanq3)*(q3 - meanq3) / sigmaq3/sigmaq3
+      - 2*corr*(q0-meanq0)*(q3-meanq3)/ (sigmaq0 * sigmaq3);
+
+    double ret = norm*exp( -0.5 * z / (1 - corr*corr) );
+    //Need to add 1 to the results
+    std::cout << ret << std::endl;
   }
 
   return w;
@@ -317,7 +392,7 @@ void GaussianModeCorr::SetDialValue(int rwenum, double val) {
 
   // 2p2h_PPandNN Setting
   for (int i = kGaussianCorr_2p2h_PPandNN_norm;
-       i <= kGaussianCorr_2p2h_PPandNN_Wq3; i++) {
+      i <= kGaussianCorr_2p2h_PPandNN_Wq3; i++) {
     if (i == curenum) {
       int index = i - kGaussianCorr_2p2h_PPandNN_norm;
       fGausVal_2p2h_PPandNN[index] = val;
@@ -327,7 +402,7 @@ void GaussianModeCorr::SetDialValue(int rwenum, double val) {
 
   // 2p2h_NP Setting
   for (int i = kGaussianCorr_2p2h_NP_norm; i <= kGaussianCorr_2p2h_NP_Wq3;
-       i++) {
+      i++) {
     if (i == curenum) {
       int index = i - kGaussianCorr_2p2h_NP_norm;
       fGausVal_2p2h_NP[index] = val;
@@ -383,7 +458,6 @@ bool GaussianModeCorr::IsHandled(int rwenum) {
     case kGaussianCorr_CC1pi_Pq3:
     case kGaussianCorr_CC1pi_Wq3:
     case kGaussianCorr_AllowSuppression:
-
       return true;
     default:
       return false;
