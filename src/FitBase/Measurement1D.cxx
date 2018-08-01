@@ -547,6 +547,13 @@ void Measurement1D::FinaliseMeasurement() {
     throw;
   }
 
+
+  // Make sure covariances are setup
+  if (!fFullCovar) {
+    fIsDiag = true;
+    SetCovarFromDiagonal(fDataHist);
+  }
+
   // Check if given covariance has good units (not E-80 etc but normalised to 1E76
   if (fFullCovar) {
     for (int i = 0; i < fFullCovar->GetNrows(); ++i) {
@@ -559,12 +566,6 @@ void Measurement1D::FinaliseMeasurement() {
         }
       }
     }
-  }
-
-  // Make sure covariances are setup
-  if (!fFullCovar) {
-    fIsDiag = true;
-    SetCovarFromDiagonal(fDataHist);
   }
 
   if (!covar) {
