@@ -554,6 +554,7 @@ void Measurement1D::FinaliseMeasurement() {
     SetCovarFromDiagonal(fDataHist);
   }
 
+  /*
   // Check if given covariance has good units (not E-80 etc but normalised to 1E76
   if (fFullCovar) {
     for (int i = 0; i < fFullCovar->GetNrows(); ++i) {
@@ -567,6 +568,7 @@ void Measurement1D::FinaliseMeasurement() {
       }
     }
   }
+  */
 
   if (!covar) {
     covar = StatUtils::GetInvert(fFullCovar);
