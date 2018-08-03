@@ -113,6 +113,9 @@ MINERvA_CC0pi_XSec_2D_nu::MINERvA_CC0pi_XSec_2D_nu(nuiskey samplekey) {
   //if (fDist == kPtPz) {
   TMatrixDSym* tempmat = StatUtils::GetCovarFromRootFile(fSettings.GetCovarInput(), "TMatrixDBase");
   fFullCovar = tempmat;
+  // Decomposition is stable for entries that aren't E-xxx
+  double ScalingFactor = 1E38;
+  (*fFullCovar) *= ScalingFactor;
 
   //} else {
     //SetCovarFromDiagonal();
@@ -181,14 +184,15 @@ MINERvA_CC0pi_XSec_2D_nu::MINERvA_CC0pi_XSec_2D_nu(nuiskey samplekey) {
           xhi1 > fDataHist->GetXaxis()->GetBinLowEdge(fDataHist->GetXaxis()->GetNbins()+1) ||
           yhi1 > fDataHist->GetYaxis()->GetBinLowEdge(fDataHist->GetYaxis()->GetNbins()+1)) continue;
       double data_error = fDataHist->GetBinError(xbin1, ybin1);
-      double cov_error = sqrt((*fFullCovar)(i,i));
-      if (data_error != cov_error) {
+      double cov_error = sqrt((*fFullCovar)(i,i)/ScalingFactor);
+      if (fabs(data_error - cov_error) > 1E-5) {
         std::cerr << "Error on data is different to that of covariance" << std::endl;
-        std::cerr << "Data error: " << data_error << std::endl;
-        std::cerr << "Cov error: " << cov_error << std::endl;
-        std::cerr << "Data/Cov: " << data_error/cov_error << std::endl;
-        std::cerr << "For x: " << xlo1 << "-" << xhi1 << std::endl;
-        std::cerr << "For y: " << ylo1 << "-" << yhi1 << std::endl;
+        ERR(FTL) << "Data error: " << data_error << std::endl;
+        ERR(FTL) << "Cov error: " << cov_error << std::endl;
+        ERR(FTL) << "Data/Cov: " << data_error/cov_error << std::endl;
+        ERR(FTL) << "Data-Cov: " << data_error-cov_error << std::endl;
+        ERR(FTL) << "For x: " << xlo1 << "-" << xhi1 << std::endl;
+        ERR(FTL) << "For y: " << ylo1 << "-" << yhi1 << std::endl;
         throw;
       }
     }
@@ -198,6 +202,11 @@ MINERvA_CC0pi_XSec_2D_nu::MINERvA_CC0pi_XSec_2D_nu(nuiskey samplekey) {
   covar = StatUtils::GetInvert(fFullCovar);
   fDecomp = StatUtils::GetDecomp(fFullCovar);
 
+  // Now scale back
+  (*fFullCovar) *= 1.0/ScalingFactor;
+  (*covar) *= ScalingFactor;
+  (*fDecomp) *= ScalingFactor;
+
   // Use a TH2D version of the covariance to be able to use the global bin numbering scheme
   covar_th2d = new TH2D((fSettings.Title()+"_th2").c_str(), (fSettings.Title()+"_th2").c_str(), covar->GetNrows(), 0, covar->GetNrows(), covar->GetNcols(), 0, covar->GetNcols());
   for (int i = 0; i < covar_th2d->GetXaxis()->GetNbins(); ++i) {
@@ -205,8 +214,8 @@ MINERvA_CC0pi_XSec_2D_nu::MINERvA_CC0pi_XSec_2D_nu(nuiskey samplekey) {
       covar_th2d->SetBinContent(i+1, j+1, (*covar)(i,j));
     }
   }
-  std::cout << "covar is " << covar_th2d->GetXaxis()->GetNbins() << " x " << covar_th2d->GetYaxis()->GetNbins() << " = " << covar_th2d->GetXaxis()->GetNbins()*covar_th2d->GetYaxis()->GetNbins() << std::endl;
-  std::cout << "data is " << fDataHist->GetXaxis()->GetNbins() << " x " << fDataHist->GetYaxis()->GetNbins() << " = " << fDataHist->GetXaxis()->GetNbins()*fDataHist->GetYaxis()->GetNbins() << std::endl;
+  //std::cout << "covar is " << covar_th2d->GetXaxis()->GetNbins() << " x " << covar_th2d->GetYaxis()->GetNbins() << " = " << covar_th2d->GetXaxis()->GetNbins()*covar_th2d->GetYaxis()->GetNbins() << std::endl;
+  //std::cout << "data is " << fDataHist->GetXaxis()->GetNbins() << " x " << fDataHist->GetYaxis()->GetNbins() << " = " << fDataHist->GetXaxis()->GetNbins()*fDataHist->GetYaxis()->GetNbins() << std::endl;
 
   // Let's make our own mapping histogram
   // The covariance matrix is dominant in Pt and sub-dominant in Pz and includes all bins with under and overflow

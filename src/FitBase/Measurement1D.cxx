@@ -217,6 +217,8 @@ void Measurement1D::SetPoissonErrors() {
 void Measurement1D::SetCovarFromDiagonal(TH1D* data) {
 //********************************************************************
 
+  fIsDiag = true;
+
   if (!data and fDataHist) {
     data = fDataHist;
   }
@@ -547,28 +549,10 @@ void Measurement1D::FinaliseMeasurement() {
     throw;
   }
 
-
   // Make sure covariances are setup
   if (!fFullCovar) {
-    fIsDiag = true;
     SetCovarFromDiagonal(fDataHist);
   }
-
-  /*
-  // Check if given covariance has good units (not E-80 etc but normalised to 1E76
-  if (fFullCovar) {
-    for (int i = 0; i < fFullCovar->GetNrows(); ++i) {
-      for (int j = 0; j < fFullCovar->GetNrows(); ++j) {
-        double entry = fabs((*fFullCovar)(i,j));
-        if (entry < 1E-60) {
-          ERR(FTL) << "Found a very small entry (" << entry << ") in covariance matrix, implying this covariance is not scaled to 1E-76" << std::endl;
-          ERR(FTL) << "Please scale all errors in covariance relative this to ensure good covariance decomposition" << std::endl;
-          throw;
-        }
-      }
-    }
-  }
-  */
 
   if (!covar) {
     covar = StatUtils::GetInvert(fFullCovar);
@@ -586,7 +570,21 @@ void Measurement1D::FinaliseMeasurement() {
   // Push the diagonals of fFullCovar onto the data histogram
   // Comment this out until the covariance/data scaling is consistent!
   // Check bin errors
-  StatUtils::SetDataErrorFromCov(fDataHist, fFullCovar, 1E-38);
+  if (!fIsDiag) StatUtils::SetDataErrorFromCov(fDataHist, fFullCovar, 1E-38);
+
+  // Check if given covariance has good units (not E-80 etc but normalised to 1E76
+  if (fFullCovar && !fIsDiag) {
+    for (int i = 0; i < fFullCovar->GetNrows(); ++i) {
+      for (int j = 0; j < fFullCovar->GetNrows(); ++j) {
+        double entry = fabs((*fFullCovar)(i,j));
+        if (entry < 1E-60) {
+          ERR(FTL) << "Found a very small entry (" << entry << ") in covariance matrix for " << fName << ", implying this covariance is not scaled to 1E-76" << std::endl;
+          ERR(FTL) << "Please scale all errors in covariance relative this to ensure good covariance decomposition" << std::endl;
+          //throw;
+        }
+      }
+    }
+  }
 
   // If shape only, set covar and fDecomp using the shape-only matrix (if set)
   if (fIsShape && fShapeCovar and FitPar::Config().GetParB("UseShapeCovar")){

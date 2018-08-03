@@ -935,7 +935,7 @@ void StatUtils::SetDataErrorFromCov(TH1D* data, TMatrixDSym* cov,
   for (int i = 0; i < data->GetNbinsX(); i++) {
     double error = sqrt(fabs((*cov)(i,i)*scale));
     double dataerror = data->GetBinError(i+1);
-    if (dataerror > 0 && error != dataerror) {
+    if (dataerror > 0 && fabs(error - dataerror) > 1E-5) {
       ERR(WRN) << "Error on data does not agree with diagonal of covariance matrix for " << data->GetName() << "!" << std::endl;
       ERR(WRN) << "Data error: " << dataerror << std::endl;
       ERR(WRN) << "Cov error: " << error << std::endl;
