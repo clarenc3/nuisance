@@ -91,7 +91,8 @@ double SBLOscWeightCalc::GetSBLOscWeight(double E) {
 
 GaussianModeCorr::GaussianModeCorr() {
 
-  // Apply the usual Gauss, not the tilt shift method
+  // Apply the tilt-shift Gauss by Patrick
+  // Alternatively set in config
   fMethod = true;
 
   // Init
@@ -231,6 +232,15 @@ double GaussianModeCorr::CalcWeight(BaseFitEvt* evt) {
   return rw_weight;
 }
 
+void GaussianModeCorr::SetMethod(bool method) {
+  fMethod = method;
+  if (fMethod == true) {
+    LOG(FIT) << " Using tilt-shift Gaussian parameters for Gaussian enhancement..." << std::endl;
+  } else {
+    LOG(FIT) << " Using Normal Gaussian parameters for Gaussian enhancement..." << std::endl;
+  }
+};
+
 double GaussianModeCorr::GetGausWeight(double q0, double q3, double vals[]) {
   // The weight
   double w = 1.0;
@@ -266,8 +276,6 @@ double GaussianModeCorr::GetGausWeight(double q0, double q3, double vals[]) {
     double Pq3 = vals[kPosPq3];
     double Wq3 = vals[kPosWq3];
 
-    for (int i = 0; i< 6; ++i) std::cout << vals[i] << std::endl;
-
     double a = cos(Tilt) * cos(Tilt) / (2 * Wq0 * Wq0);
     a += sin(Tilt) * sin(Tilt) / (2 * Wq3 * Wq3);
 
@@ -302,31 +310,17 @@ double GaussianModeCorr::GetGausWeight(double q0, double q3, double vals[]) {
   } else {
     /*
      * From MINERvA and Daniel Ruterbories:
-     * http://cdcvs.fnal.gov/cgi-bin/public-cvs/cvsweb-public.cgi/AnalysisFramework/Ana/CCQENu/ana_common/data/?cvsroot=mnvsoft
-     * 2p2h:
-     * 18.5896
-     * 0.256895
-     * 0.509694
-     * 0.0528243
-     * 0.125003
-     * 0.949053
+     * Old notes here: * http://cdcvs.fnal.gov/cgi-bin/public-cvs/cvsweb-public.cgi/AnalysisFramework/Ana/CCQENu/ana_common/data/?cvsroot=mnvsoft
+     * These parameters are slightly altered
      *
-     * QE:
-     * 12.0857
-     * 0.213998
-     * 0.390444
-     * 0.0454559
-     * 0.110803
-     * 0.857289
-     *
-     * MEC best fit:?
-     * 12.0015
-     * 0.272204
-     * 0.530213
-     * 0.078976
-     * 0.166203
-     * 0.884621
-       */
+     * FRESH:
+     * 10.5798
+     * 0.254032
+     * 0.50834
+     * 0.0571035
+     * 0.129051
+     * 0.875287
+     */
     if (fDebugStatements) {
       std::cout << "Using MINERvA Gaussian" << std::endl;
     }
@@ -338,25 +332,13 @@ double GaussianModeCorr::GetGausWeight(double q0, double q3, double vals[]) {
     double sigmaq3 = vals[kPosPq3];
     double corr = vals[kPosWq3];
 
-    /*
-    double Norm = vals[kPosNorm];
-    double Tilt = vals[kPosTilt];
-    double Pq0 = vals[kPosPq0];
-    double Wq0 = vals[kPosWq0];
-    double Pq3 = vals[kPosPq3];
-    double Wq3 = vals[kPosWq3];
-    */
-
-    std::cout << q0 << " " << meanq0 << std::endl;
-    std::cout << q3 << " " << meanq3 << std::endl;
-
     double z = (q0 - meanq0)*(q0 - meanq0) /sigmaq0/sigmaq0
       + (q3 - meanq3)*(q3 - meanq3) / sigmaq3/sigmaq3
       - 2*corr*(q0-meanq0)*(q3-meanq3)/ (sigmaq0 * sigmaq3);
 
     double ret = norm*exp( -0.5 * z / (1 - corr*corr) );
     //Need to add 1 to the results
-    std::cout << ret << std::endl;
+    w = 1.0 + ret;
   }
 
   return w;
@@ -433,24 +415,28 @@ bool GaussianModeCorr::IsHandled(int rwenum) {
     case kGaussianCorr_CCQE_Wq0:
     case kGaussianCorr_CCQE_Pq3:
     case kGaussianCorr_CCQE_Wq3:
+
     case kGaussianCorr_2p2h_norm:
     case kGaussianCorr_2p2h_tilt:
     case kGaussianCorr_2p2h_Pq0:
     case kGaussianCorr_2p2h_Wq0:
     case kGaussianCorr_2p2h_Pq3:
     case kGaussianCorr_2p2h_Wq3:
+
     case kGaussianCorr_2p2h_PPandNN_norm:
     case kGaussianCorr_2p2h_PPandNN_tilt:
     case kGaussianCorr_2p2h_PPandNN_Pq0:
     case kGaussianCorr_2p2h_PPandNN_Wq0:
     case kGaussianCorr_2p2h_PPandNN_Pq3:
     case kGaussianCorr_2p2h_PPandNN_Wq3:
+
     case kGaussianCorr_2p2h_NP_norm:
     case kGaussianCorr_2p2h_NP_tilt:
     case kGaussianCorr_2p2h_NP_Pq0:
     case kGaussianCorr_2p2h_NP_Wq0:
     case kGaussianCorr_2p2h_NP_Pq3:
     case kGaussianCorr_2p2h_NP_Wq3:
+
     case kGaussianCorr_CC1pi_norm:
     case kGaussianCorr_CC1pi_tilt:
     case kGaussianCorr_CC1pi_Pq0:

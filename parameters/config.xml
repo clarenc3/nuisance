@@ -180,14 +180,33 @@
 <config MINERvADensity='1.04'/>
 <config MINERvARecoDist='10.0'/>
 
+<!-- Different way of reweighting in GENIE -->
 <config GENIEWeightEngine_CCRESMode="kModeMaMv"/>
+<!--
+<config GENIEWeightEngine_CCQEMode="kModeMa"/>
+-->
+
+<config GENIEWeightEngine_CCQEMode="kModeZExp"/>
+<!--
+<config GENIEWeightEngine_CCQEMode="kModeMa"/>
+<config GENIEWeightEngine_CCQEMode="kModeNormAndMaShape"/>
+<config GENIEWeightEngine_CCQEMode="kModeZExp"/>
+-->
+
+<!-- CCQE/2p2h/1pi Gaussian enhancement method -->
+<!-- Apply tilt-shift weights or normal Gaussian parameters-->
+<config Gaussian_Enhancement="Normal" />
+<!--
+<config Gaussian_Enhancement="Tilt-Shift" />
+-->
 
 <config NToyThrows='100000' />
 
-
+<!--
 <config GENIEXSecModelCCRES="genie::ReinSehgalRESPXSec" />
 <config GENIEXSecModelCOH="genie::ReinSehgalCOHPiPXSec" />
 <config GENIEXSecModelCCQE="genie::LwlynSmithQELCCPXSec" />
+-->
 
 <!--
 <config GENIEXSecModelCCQE="genie::NievesQELCCPXSec" />
@@ -196,8 +215,6 @@
 -->
 
 <config UseShapeCovar="0" />
-<!-- For old MINERvA CC0pi 2Dptpz measurement, can be deleted safely -->
-<config CC0piNBINS="156" />
 
 </nuisance>
 

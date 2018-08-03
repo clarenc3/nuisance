@@ -5,12 +5,14 @@
 
 
 #ifdef __GENIE_ENABLED__
+#include "Algorithm/AlgConfigPool.h"
 #include "EVGCore/EventRecord.h"
 #include "EVGCore/EventRecord.h"
 #include "GHEP/GHepRecord.h"
 #include "GSyst.h"
 #include "GSystUncertainty.h"
 #include "Ntuple/NtpMCEventRecord.h"
+#include "Registry/Registry.h"
 #include "ReWeight/GReWeight.h"
 #include "ReWeight/GReWeightAGKY.h"
 #include "ReWeight/GReWeightDISNuclMod.h"

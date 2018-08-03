@@ -81,26 +81,6 @@ namespace nuisance {
 
     };
 
-    /*
-    // RES Dials
-    class MINERvAReWeight_NonRES1pi : public NUISANCEWeightCalc {
-      public:
-        MINERvAReWeight_NonRES1pi();
-        virtual ~MINERvAReWeight_NonRES1pi();
-
-        double CalcWeight(BaseFitEvt* evt);
-        void SetDialValue(std::string name, double val);
-        void SetDialValue(int rwenum, double val);
-        bool IsHandled(int rwenum);
-
-        double fTwk_NormCCNonRES1pi;
-        double fCur_NormCCNonRES1pi;
-        double fDef_NormCCNonRES1pi;
-        bool fTweaked;
-
-    };
-    */
-
     /// RPA Weight Calculator that applies RPA systematics
     /// to GENIE events. GENIE EVENTS ONLY!
     class RikRPA : public NUISANCEWeightCalc {

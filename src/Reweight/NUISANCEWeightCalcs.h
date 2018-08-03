@@ -64,7 +64,8 @@ class GaussianModeCorr : public NUISANCEWeightCalc {
     void SetDialValue(int rwenum, double val);
     bool IsHandled(int rwenum);
     double GetGausWeight(double q0, double q3, double vals[]);
-    void SetMethod(bool method) {fMethod = method;};
+    // Set the Gaussian method (tilt-shift or normal Gaussian parameters)
+    void SetMethod(bool method);
 
     // 5 pars describe the Gaussain
     // 0 norm.
