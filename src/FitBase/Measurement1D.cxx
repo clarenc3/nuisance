@@ -554,15 +554,6 @@ void Measurement1D::FinaliseMeasurement() {
     SetCovarFromDiagonal(fDataHist);
   }
 
-  if (!covar) {
-    covar = StatUtils::GetInvert(fFullCovar);
-    for (int i = 0; i < covar->GetNrows(); ++i) {
-      for (int j = 0; j < covar->GetNcols(); ++j) {
-        std::cout << i << ", " << j << " = " << (*covar)(i,j) << std::endl;
-      }
-    }
-  }
-
   if (!fDecomp) {
     fDecomp = StatUtils::GetDecomp(fFullCovar);
   }
@@ -570,7 +561,11 @@ void Measurement1D::FinaliseMeasurement() {
   // Push the diagonals of fFullCovar onto the data histogram
   // Comment this out until the covariance/data scaling is consistent!
   // Check bin errors
-  if (!fIsDiag) StatUtils::SetDataErrorFromCov(fDataHist, fFullCovar, 1E-38);
+  bool NoDataErrors = false;
+  for (int i = 0; i < fDataHist->GetNbinsX()+1; ++i) {
+    if (fDataHist->GetBinError(i+1) == 0) NoDataErrors = true;
+  }
+  if (NoDataErrors) StatUtils::SetDataErrorFromCov(fDataHist, fFullCovar, 1E-38);
 
   // Check if given covariance has good units (not E-80 etc but normalised to 1E76
   if (fFullCovar && !fIsDiag) {

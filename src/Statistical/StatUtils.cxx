@@ -932,10 +932,11 @@ void StatUtils::SetDataErrorFromCov(TH1D* data, TMatrixDSym* cov,
 
   bool GetErrorFromDiag = true;
   // First check if errors on data agree with covariance
-  for (int i = 0; i < data->GetNbinsX(); i++) {
+  for (int i = 0; i < data->GetNbinsX()+1; i++) {
     double error = sqrt(fabs((*cov)(i,i)*scale));
     double dataerror = data->GetBinError(i+1);
-    if (dataerror > 0 && fabs(error - dataerror) > 1E-5) {
+    // Check percentage error
+    if (dataerror > 0 && fabs(error - dataerror)/dataerror > 1E-5) {
       ERR(WRN) << "Error on data does not agree with diagonal of covariance matrix for " << data->GetName() << "!" << std::endl;
       ERR(WRN) << "Data error: " << dataerror << std::endl;
       ERR(WRN) << "Cov error: " << error << std::endl;
@@ -947,7 +948,7 @@ void StatUtils::SetDataErrorFromCov(TH1D* data, TMatrixDSym* cov,
   // If error is correct why not just set it...
   if (GetErrorFromDiag) {
     // Set bin errors form cov diag
-    for (int i = 0; i < data->GetNbinsX(); i++) {
+    for (int i = 0; i < data->GetNbinsX()+1; i++) {
       double error = sqrt(fabs((*cov)(i,i)*scale));
       data->SetBinError(i + 1, error);
     }
