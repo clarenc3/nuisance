@@ -562,8 +562,12 @@ void Measurement1D::FinaliseMeasurement() {
   // Comment this out until the covariance/data scaling is consistent!
   // Check bin errors
   bool NoDataErrors = false;
-  for (int i = 0; i < fDataHist->GetNbinsX()+1; ++i) {
-    if (fDataHist->GetBinError(i+1) == 0) NoDataErrors = true;
+  for (int i = 0; i < fDataHist->GetNbinsX(); ++i) {
+    if (fDataHist->GetBinError(i+1) == 0) {
+      std::cout << "Found no errors on " << fDataHist->GetBinLowEdge(i+1) << std::endl;
+      NoDataErrors = true;
+      break;
+    }
   }
   if (NoDataErrors) StatUtils::SetDataErrorFromCov(fDataHist, fFullCovar, 1E-38);
 

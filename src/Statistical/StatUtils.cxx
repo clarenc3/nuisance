@@ -932,7 +932,7 @@ void StatUtils::SetDataErrorFromCov(TH1D* data, TMatrixDSym* cov,
 
   bool GetErrorFromDiag = true;
   // First check if errors on data agree with covariance
-  for (int i = 0; i < data->GetNbinsX()+1; i++) {
+  for (int i = 0; i < data->GetNbinsX(); i++) {
     double error = sqrt(fabs((*cov)(i,i)*scale));
     double dataerror = data->GetBinError(i+1);
     // Check percentage error
@@ -948,7 +948,7 @@ void StatUtils::SetDataErrorFromCov(TH1D* data, TMatrixDSym* cov,
   // If error is correct why not just set it...
   if (GetErrorFromDiag) {
     // Set bin errors form cov diag
-    for (int i = 0; i < data->GetNbinsX()+1; i++) {
+    for (int i = 0; i < data->GetNbinsX(); i++) {
       double error = sqrt(fabs((*cov)(i,i)*scale));
       data->SetBinError(i + 1, error);
     }
