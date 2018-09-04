@@ -64,7 +64,6 @@ MINERvA_CC0pi_XSec_1DQ2_nu::MINERvA_CC0pi_XSec_1DQ2_nu(nuiskey samplekey) {
 
   // This covariance comes in full units, so need to multiply by scaling factor to ensure good decomp
   double ScalingFactor = 1.0E76;
-  //double ScalingFactor = 1;
 
   fFullCovar = new TMatrixDSym(fDataHist->GetXaxis()->GetNbins());
   int xcnt = 0;
@@ -82,13 +81,14 @@ MINERvA_CC0pi_XSec_1DQ2_nu::MINERvA_CC0pi_XSec_1DQ2_nu(nuiskey samplekey) {
     }
     xcnt++;
   }
+  fIsDiag = false;
 
-  // Now our covariances are in units of 1E38, so inverse covariance is in unit of 1E-38
   covar = StatUtils::GetInvert(fFullCovar);
   fDecomp = StatUtils::GetDecomp(fFullCovar);
 
   // Final setup  ---------------------------------------------------
   FinaliseMeasurement();
+
 };
 
 //********************************************************************

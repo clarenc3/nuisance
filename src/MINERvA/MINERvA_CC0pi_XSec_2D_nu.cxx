@@ -46,8 +46,10 @@ void MINERvA_CC0pi_XSec_2D_nu::SetupDataSettings() {
 
   switch (fDist) {
     case (kPtPz):
-      datafile = "MINERvA/CC0pi_ptpz/ptpz_data.root";
-      corrfile = "MINERvA/CC0pi_ptpz/ptpz_cov.root";
+      //datafile = "MINERvA/CC0pi_ptpz/ptpz_data.root";
+      //corrfile = "MINERvA/CC0pi_ptpz/ptpz_cov.root";
+      datafile = "MINERvA/CC0pi_ptpz/minerva_pub.root";
+      corrfile = "MINERvA/CC0pi_ptpz/minerva_pub.root";
       titles    = "MINERvA CC0#pi #nu_{#mu} p_{t} p_{z};p_{z} (GeV);p_{t} (GeV);d^{2}#sigma/dP_{t}dP_{z} (cm^{2}/GeV^{2}/nucleon)";
       distdescript = "MINERvA_CC0pi_XSec_2Dptpz_nu sample";
       histname = "h_pzmu_ptmu_data_nobck_unfold_effcor_cross_section_CV_WithErr";
@@ -111,7 +113,8 @@ MINERvA_CC0pi_XSec_2D_nu::MINERvA_CC0pi_XSec_2D_nu(nuiskey samplekey) {
   //SetMapValuesFromText( fSettings.GetMapInput() );
   // Also have to make our own covariance matrix to exclude the under and overflow
   //if (fDist == kPtPz) {
-  TMatrixDSym* tempmat = StatUtils::GetCovarFromRootFile(fSettings.GetCovarInput(), "TMatrixDBase");
+  //TMatrixDSym* tempmat = StatUtils::GetCovarFromRootFile(fSettings.GetCovarInput(), "TMatrixDBase");
+  TMatrixDSym* tempmat = StatUtils::GetCovarFromRootFile(fSettings.GetCovarInput(), "cov");
   fFullCovar = tempmat;
   // Decomposition is stable for entries that aren't E-xxx
   double ScalingFactor = 1E38;
@@ -302,88 +305,165 @@ double MINERvA_CC0pi_XSec_2D_nu::GetLikelihood() {
   // The calculated chi2
   double chi2 = 0.0;
 
-  //if (fDist == kPtPz) {
+  // STRICTLY DEBUGGING WITH DAN
+  /*
+  std::vector<std::string> Names;
+  //Names.push_back(std::string(std::getenv("NUISANCE"))+"/build/app/DanMC/Genie_MC.root");
+  //Names.push_back(std::string(std::getenv("NUISANCE"))+"/build/app/DanMC/Genie2p2hrpa_MC.root");
+  //Names.push_back(std::string(std::getenv("NUISANCE"))+"/build/app/DanMC/MnvGENIE_MC.root");
+  Names.push_back(std::string(std::getenv("NUISANCE"))+"/data/MINERvA/CC0pi_ptpz/minerva_pub.root");
+
+  // Hack hack hack hack
+  double scaleF = 0.0;
+
+  for (size_t a = 0; a < Names.size(); ++a) {
+    std::cout << Names[a] << std::endl;
+    //TFile *file = new TFile((std::string(std::getenv("NUISANCE"))+"/build/app/DanMC/Genie_MC.root").c_str(), "OPEN");
+    //TFile *file = new TFile((std::string(std::getenv("NUISANCE"))+"/build/app/DanMC/Genie2p2hrpa_MC.root").c_str(), "OPEN");
+    //TFile *file = new TFile((std::string(std::getenv("NUISANCE"))+"/build/app/DanMC/MnvGENIE_MC.root").c_str(), "OPEN");
+    TFile *file = new TFile(Names[a].c_str(), "OPEN");
+    //TH2D *mc = (TH2D*)(file->Get("h_pzmu_ptmu_mc_nobck_unfold_effcor_cross_section_CV_WithStatErr")->Clone());
+    TH2D *mc = (TH2D*)(file->Get("h_pzmu_ptmu_mc_nobck_unfold_effcor_cross_section_CV_WithErr")->Clone());
+    fMCHist = mc;
+    //fMCHist->Scale(1., "width");
+    //fDataHist->Scale(1., "width");
+    */
+
     // Support shape comparisons
-    double scaleF = fDataHist->Integral() / fMCHist->Integral();
+    scaleF = fDataHist->Integral() / fMCHist->Integral();
     if (fIsShape) {
       fMCHist->Scale(scaleF);
       fMCFine->Scale(scaleF);
       //PlotUtils::ScaleNeutModeArray((TH1**)fMCHist_PDG, scaleF);
     }
 
-    // Calculate the test-statistic
-    for (int i = 0; i < covar_th2d->GetXaxis()->GetNbins()+1; ++i) {
-      // Get the global bin for x
-      int xbin1, ybin1, zbin1;
-      fDataHist->GetBinXYZ(i, xbin1, ybin1, zbin1);
-      double xlo1 = fDataHist->GetXaxis()->GetBinLowEdge(xbin1);
-      double xhi1 = fDataHist->GetXaxis()->GetBinLowEdge(xbin1+1);
-      double ylo1 = fDataHist->GetYaxis()->GetBinLowEdge(ybin1);
-      double yhi1 = fDataHist->GetYaxis()->GetBinLowEdge(ybin1+1);
-      if (xlo1 < fDataHist->GetXaxis()->GetBinLowEdge(1) ||
-          ylo1 < fDataHist->GetYaxis()->GetBinLowEdge(1) ||
-          xhi1 > fDataHist->GetXaxis()->GetBinLowEdge(fDataHist->GetXaxis()->GetNbins()+1) ||
-          yhi1 > fDataHist->GetYaxis()->GetBinLowEdge(fDataHist->GetYaxis()->GetNbins()+1)) continue;
+    // Even though this chi2 calculation looks ugly it is _EXACTLY_ what MINERvA used for their measurement
+    // Can be prettified in due time but for now keep
+    bool chi2_use_overflow_err = false;
+    const int lowBin  = chi2_use_overflow_err?0:1; // Either they both use underflow, or neither of them does
 
-      // Get the data
-      double data1 = fDataHist->GetBinContent(i);
-      // Get the MC
-      double mc1 = fMCHist->GetBinContent(i);
+    int nbinsx=fMCHist->GetNbinsX();
+    int nbinsy=fMCHist->GetNbinsY();
+    const int highBinX = nbinsx;
+    const int highBinY = nbinsy;
+    Int_t Nbins = (highBinX-lowBin+1)* (highBinY-lowBin+1); // from low to high inclusive in each dimension
 
-      for (int j = 0; j < covar_th2d->GetYaxis()->GetNbins()+1; ++j) {
+    TMatrixD covMatrixTmp = (*fFullCovar);
 
-        int xbin2, ybin2, zbin2;
-        fDataHist->GetBinXYZ(j, xbin2, ybin2, zbin2);
-        double xlo2 = fDataHist->GetXaxis()->GetBinLowEdge(xbin2);
-        double xhi2 = fDataHist->GetXaxis()->GetBinLowEdge(xbin2+1);
-        double ylo2 = fDataHist->GetYaxis()->GetBinLowEdge(ybin2);
-        double yhi2 = fDataHist->GetYaxis()->GetBinLowEdge(ybin2+1);
+    TMatrixD covMatrix(Nbins, Nbins);
+    const double scaling = 1e80;//ROOT can't seem to handle small entries with lots of zeros? Suggested scaling the histogram and then rescaling the inverted matrix
+    for( int i = 0; i != Nbins; ++i ) {
+      for( int j = 0; j != Nbins; ++j ) {
+        // I think this is right... it checks out on a small sample
+        int old_i_bin = (i/nbinsx + 1)* (nbinsx +2) +1 + i%nbinsx;
+        int old_j_bin = (j/nbinsx + 1)* (nbinsx +2) +1 + j%nbinsx;
+        covMatrix[i][j] = covMatrixTmp[old_i_bin][old_j_bin]*scaling;
+        //std::cout << Nbins*Nbins << " (" << Nbins << "*" << Nbins << ")" << std::endl;
+        //std::cout << i << ", " << j << " = " << old_i_bin << " " << old_j_bin << std::endl;
+      }
+      //throw;
+    }
 
-        if (xlo2 < fDataHist->GetXaxis()->GetBinLowEdge(1) ||
-            ylo2 < fDataHist->GetYaxis()->GetBinLowEdge(1) ||
-            xhi2 > fDataHist->GetXaxis()->GetBinLowEdge(fDataHist->GetXaxis()->GetNbins()+1) ||
-            yhi2 > fDataHist->GetYaxis()->GetBinLowEdge(fDataHist->GetYaxis()->GetNbins()+1)) continue;
+    TDecompSVD error(covMatrix);
+    TMatrixD errorMatrix(covMatrix);
+    if( ! error.Invert( errorMatrix ) ) {
+      std::cout << "Cannot invert total covariance matrix. You could use statistical errors only for Chi2 calculation. But it isn't implemented yet" << std::endl;
+    }
 
+    covMatrix *= 1/scaling;
+    errorMatrix *= scaling;
 
-        //std::cout << "Correlating: (" << xlo1 << "-" << xhi1 << "," << ylo1 << "-" << yhi1 << ") with (" << xlo2 << "-" << xhi2 << "," << ylo2 << "-" << yhi2 << ")" << std::endl;
+    for( int i = 0; i != Nbins; ++i ) {
+      int hist_i_bin = chi2_use_overflow_err?i:((i/nbinsx + 1)* (nbinsx +2) +1 + i%nbinsx); // Translate to the histogram bin, if we aren't using the overflow errors, meaning the covariance matrix is smaller than the histogram
+      const Double_t x_data_i = fDataHist->GetBinContent(hist_i_bin);
+      const Double_t x_mc_i   = fMCHist->GetBinContent(hist_i_bin);
+      for( int j = 0; j != Nbins; ++j ) {
+        // Each element of the inverted covariance matrix corresponds to a pair of data and MC
+        int hist_j_bin = chi2_use_overflow_err?j:((j/nbinsx + 1)* (nbinsx +2) +1 + j%nbinsx);
+        const Double_t x_data_j = fDataHist->GetBinContent(hist_j_bin);
+        const Double_t x_mc_j   = fMCHist->GetBinContent(hist_j_bin);
+        const double chi2_ij = (x_data_i - x_mc_i) * errorMatrix[i][j] * (x_data_j - x_mc_j);
+        std::cout << x_data_i << "\t" << x_mc_i << "\t" << i << "\t" << errorMatrix[i][j] << "\t" << j << "\t" << x_data_j << "\t" << x_mc_j << "\t" << chi2_ij << std::endl;
 
-        // Get the data
-        double data2 = fDataHist->GetBinContent(j);
-        // Get the MC
-        double mc2 = fMCHist->GetBinContent(j);
-        //std::cout << data1 << " " << mc1 << std::endl;
-        //std::cout << data2 << " " << mc2 << std::endl;
-        //std::cout << std::endl;
-
-        // Get the inverse covariance matrix entry
-        double coventry = covar_th2d->GetBinContent(i, j);
-
-        //std::cout << fDataHist->GetXaxis()->GetBinLowEdge(i+1) << " - " << fDataHist->GetXaxis()->GetBinLowEdge(i+2) << ", " << fDataHist->GetYaxis()->GetBinLowEdge(j+1) << " - " << fDataHist->GetYaxis()->GetBinLowEdge(j+2) << " = " << coventry << " (global = " << global << ")" << std::endl;
-
-        chi2 += (data1-mc1)*coventry*(data2-mc2);
+        chi2 += chi2_ij;
       }
     }
+    //std::cout << Names[a] << " chi2 " << chi2 << std::endl;
 
-    // Normalisation penalty term if included
-    if (fAddNormPen) {
-      chi2 +=
-        (1 - (fCurrentNorm)) * (1 - (fCurrentNorm)) / (fNormError * fNormError);
-      LOG(REC) << "Norm penalty = "
-        << (1 - (fCurrentNorm)) * (1 - (fCurrentNorm)) /
-        (fNormError * fNormError)
-        << std::endl;
+    /*
+     * CWRET CALC
+    // Calculate the test-statistic
+    for (int i = 0; i < covar_th2d->GetXaxis()->GetNbins()+1; ++i) {
+    // Get the global bin for x
+    int xbin1, ybin1, zbin1;
+    fDataHist->GetBinXYZ(i, xbin1, ybin1, zbin1);
+    double xlo1 = fDataHist->GetXaxis()->GetBinLowEdge(xbin1);
+    double xhi1 = fDataHist->GetXaxis()->GetBinLowEdge(xbin1+1);
+    double ylo1 = fDataHist->GetYaxis()->GetBinLowEdge(ybin1);
+    double yhi1 = fDataHist->GetYaxis()->GetBinLowEdge(ybin1+1);
+    if (xlo1 < fDataHist->GetXaxis()->GetBinLowEdge(1) ||
+    ylo1 < fDataHist->GetYaxis()->GetBinLowEdge(1) ||
+    xhi1 > fDataHist->GetXaxis()->GetBinLowEdge(fDataHist->GetXaxis()->GetNbins()+1) ||
+    yhi1 > fDataHist->GetYaxis()->GetBinLowEdge(fDataHist->GetYaxis()->GetNbins()+1)) continue;
+
+    // Get the data
+    double data1 = fDataHist->GetBinContent(i);
+    // Get the MC
+    double mc1 = fMCHist->GetBinContent(i);
+
+    for (int j = 0; j < covar_th2d->GetYaxis()->GetNbins()+1; ++j) {
+
+    int xbin2, ybin2, zbin2;
+    fDataHist->GetBinXYZ(j, xbin2, ybin2, zbin2);
+    double xlo2 = fDataHist->GetXaxis()->GetBinLowEdge(xbin2);
+    double xhi2 = fDataHist->GetXaxis()->GetBinLowEdge(xbin2+1);
+    double ylo2 = fDataHist->GetYaxis()->GetBinLowEdge(ybin2);
+    double yhi2 = fDataHist->GetYaxis()->GetBinLowEdge(ybin2+1);
+
+    if (xlo2 < fDataHist->GetXaxis()->GetBinLowEdge(1) ||
+    ylo2 < fDataHist->GetYaxis()->GetBinLowEdge(1) ||
+    xhi2 > fDataHist->GetXaxis()->GetBinLowEdge(fDataHist->GetXaxis()->GetNbins()+1) ||
+    yhi2 > fDataHist->GetYaxis()->GetBinLowEdge(fDataHist->GetYaxis()->GetNbins()+1)) continue;
+
+
+    //std::cout << "Correlating: (" << xlo1 << "-" << xhi1 << "," << ylo1 << "-" << yhi1 << ") with (" << xlo2 << "-" << xhi2 << "," << ylo2 << "-" << yhi2 << ")" << std::endl;
+
+    // Get the data
+    double data2 = fDataHist->GetBinContent(j);
+    // Get the MC
+    double mc2 = fMCHist->GetBinContent(j);
+    //std::cout << data1 << " " << mc1 << std::endl;
+    //std::cout << data2 << " " << mc2 << std::endl;
+    //std::cout << std::endl;
+
+    // Get the inverse covariance matrix entry
+    double coventry = covar_th2d->GetBinContent(i, j);
+
+    //std::cout << fDataHist->GetXaxis()->GetBinLowEdge(i+1) << " - " << fDataHist->GetXaxis()->GetBinLowEdge(i+2) << ", " << fDataHist->GetYaxis()->GetBinLowEdge(j+1) << " - " << fDataHist->GetYaxis()->GetBinLowEdge(j+2) << " = " << coventry << " (global = " << global << ")" << std::endl;
+
+    chi2 += (data1-mc1)*coventry*(data2-mc2);
     }
-
-    // Adjust the shape back to where it was.
-    if (fIsShape and !FitPar::Config().GetParB("saveshapescaling")) {
-      fMCHist->Scale(1. / scaleF);
-      fMCFine->Scale(1. / scaleF);
     }
-
-    fLikelihood = chi2;
-  //} else {
-    //chi2 = Measurement2D::GetLikelihood();
+    */
   //}
+
+  // Normalisation penalty term if included
+  if (fAddNormPen) {
+    chi2 +=
+      (1 - (fCurrentNorm)) * (1 - (fCurrentNorm)) / (fNormError * fNormError);
+    LOG(REC) << "Norm penalty = "
+      << (1 - (fCurrentNorm)) * (1 - (fCurrentNorm)) /
+      (fNormError * fNormError)
+      << std::endl;
+  }
+
+  // Adjust the shape back to where it was.
+  if (fIsShape and !FitPar::Config().GetParB("saveshapescaling")) {
+    fMCHist->Scale(1. / scaleF);
+    fMCFine->Scale(1. / scaleF);
+  }
+
+  fLikelihood = chi2;
 
   return chi2;
 };
