@@ -330,7 +330,7 @@ double MINERvA_CC0pi_XSec_2D_nu::GetLikelihood() {
     */
 
     // Support shape comparisons
-    scaleF = fDataHist->Integral() / fMCHist->Integral();
+    double scaleF = fDataHist->Integral() / fMCHist->Integral();
     if (fIsShape) {
       fMCHist->Scale(scaleF);
       fMCFine->Scale(scaleF);
