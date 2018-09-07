@@ -48,8 +48,8 @@ void MINERvA_CC0pi_XSec_2D_nu::SetupDataSettings() {
     case (kPtPz):
       //datafile = "MINERvA/CC0pi_ptpz/ptpz_data.root";
       //corrfile = "MINERvA/CC0pi_ptpz/ptpz_cov.root";
-      datafile = "MINERvA/CC0pi_ptpz/minerva_pub.root";
-      corrfile = "MINERvA/CC0pi_ptpz/minerva_pub.root";
+      datafile = "MINERvA/CC0pi_ptpz/MINERvA_LE_CCQELike_pzmu.root";
+      corrfile = "MINERvA/CC0pi_ptpz/MINERvA_LE_CCQELike_pzmu.root";
       titles    = "MINERvA CC0#pi #nu_{#mu} p_{t} p_{z};p_{z} (GeV);p_{t} (GeV);d^{2}#sigma/dP_{t}dP_{z} (cm^{2}/GeV^{2}/nucleon)";
       distdescript = "MINERvA_CC0pi_XSec_2Dptpz_nu sample";
       histname = "h_pzmu_ptmu_data_nobck_unfold_effcor_cross_section_CV_WithErr";
@@ -114,7 +114,7 @@ MINERvA_CC0pi_XSec_2D_nu::MINERvA_CC0pi_XSec_2D_nu(nuiskey samplekey) {
   // Also have to make our own covariance matrix to exclude the under and overflow
   //if (fDist == kPtPz) {
   //TMatrixDSym* tempmat = StatUtils::GetCovarFromRootFile(fSettings.GetCovarInput(), "TMatrixDBase");
-  TMatrixDSym* tempmat = StatUtils::GetCovarFromRootFile(fSettings.GetCovarInput(), "cov");
+  TMatrixDSym* tempmat = StatUtils::GetCovarFromRootFile(fSettings.GetCovarInput(), "CovMatrix");
   fFullCovar = tempmat;
   // Decomposition is stable for entries that aren't E-xxx
   double ScalingFactor = 1E38;
@@ -311,7 +311,7 @@ double MINERvA_CC0pi_XSec_2D_nu::GetLikelihood() {
   //Names.push_back(std::string(std::getenv("NUISANCE"))+"/build/app/DanMC/Genie_MC.root");
   //Names.push_back(std::string(std::getenv("NUISANCE"))+"/build/app/DanMC/Genie2p2hrpa_MC.root");
   //Names.push_back(std::string(std::getenv("NUISANCE"))+"/build/app/DanMC/MnvGENIE_MC.root");
-  Names.push_back(std::string(std::getenv("NUISANCE"))+"/data/MINERvA/CC0pi_ptpz/minerva_pub.root");
+  Names.push_back(std::string(std::getenv("NUISANCE"))+"/data/MINERvA/CC0pi_ptpz/MINERvA_LE_CCQELike_pzmu.root");
 
   // Hack hack hack hack
   double scaleF = 0.0;
