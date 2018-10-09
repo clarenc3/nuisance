@@ -144,7 +144,6 @@ GENIEWeightEngine::GENIEWeightEngine(std::string name) {
     ERR(FTL) << "Also check your " << std::getenv("NUISANCE") << "/parameters/config.xml GENIEWeightEngine_CCQEMode: " << ccqetype << std::endl;
     throw;
   }
-
 #endif
 
   // Default to include shape and normalization changes for CCRES (can be changed downstream if desired)
@@ -194,6 +193,7 @@ void GENIEWeightEngine::IncludeDial(std::string name, double startval) {
   // Check ZExp sillyness in GENIE
   // If ZExpansion parameters are used we need to set a different mode in GENIE ReWeight...
   // GENIE doesn't have a setter either...
+#if __GENIE_VERSION__ >= 212
   std::string ccqetype = FitPar::Config().GetParS("GENIEWeightEngine_CCQEMode");
   GReWeightNuXSecCCQE * rwccqe = dynamic_cast<GReWeightNuXSecCCQE *> (fGenieRW->WghtCalc("xsec_ccqe"));
   if (ccqetype != "kModeZExp" && (name == "ZExpA1CCQE" || name == "ZExpA2CCQE" || name == "ZExpA3CCQE" || name == "ZExpA4CCQE")) {
@@ -207,6 +207,7 @@ void GENIEWeightEngine::IncludeDial(std::string name, double startval) {
     ERR(WRN) << "Forcing GENIE ReWeight CCQE to enable MaCCQE reweighting (kModeMa)" << std::endl;
     rwccqe->SetMode(GReWeightNuXSecCCQE::kModeMa);
   }
+#endif
 
   // Setup Maps
   fEnumIndex[nuisenum];// = std::vector<size_t>(0);
