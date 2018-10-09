@@ -926,7 +926,6 @@ void Measurement2D::ApplyNormScale(double norm) {
 int Measurement2D::GetNDOF() {
 //********************************************************************
 
-
   // Just incase it has gone...
   if (!fDataHist) return -1;
 
@@ -934,9 +933,9 @@ int Measurement2D::GetNDOF() {
 
   // If datahist has no errors make sure we don't include those bins as they are
   // not data points
-  for (int xBin = 0; xBin < fDataHist->GetNbinsX() + 1; ++xBin) {
-    for (int yBin = 0; yBin < fDataHist->GetNbinsY() + 1; ++yBin) {
-      if (fDataHist->GetBinError(xBin, yBin) != 0)
+  for (int xBin = 0; xBin < fDataHist->GetNbinsX(); ++xBin) {
+    for (int yBin = 0; yBin < fDataHist->GetNbinsY(); ++yBin) {
+      if (fDataHist->GetBinError(xBin+1, yBin+1) != 0)
         ++nDOF;
     }
   }
@@ -1354,7 +1353,11 @@ void Measurement2D::Write(std::string drawOpt) {
 
   // Convert to 1D Lists
   TH1D* data_1D = StatUtils::MapToTH1D(fDataHist, fMapHist);
+  data_1D->SetLineWidth(2);
+  data_1D->SetLineColor(kBlack);
   TH1D* mc_1D = StatUtils::MapToTH1D(fMCHist, fMapHist);
+  mc_1D->SetLineWidth(2);
+  mc_1D->SetLineColor(kRed);
   TH1I* mask_1D = StatUtils::MapToMask(fMaskHist, fMapHist);
 
   data_1D->Write();
