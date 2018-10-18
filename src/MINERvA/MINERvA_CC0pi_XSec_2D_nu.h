@@ -71,8 +71,9 @@ class MINERvA_CC0pi_XSec_2D_nu : public Measurement2D {
   enum Distribution {
     // Pt Pz
     kPtPz,
-    // Pt Q2
-    kPtQ2
+    kQ2QE,
+    kPt,
+    kPz
   };
   
 };
